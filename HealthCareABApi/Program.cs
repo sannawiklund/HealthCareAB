@@ -24,8 +24,6 @@ builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 // Register custom services
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<JwtTokenService>();
-//builder.Services.AddScoped<AvailabilityService>();
-
 
 
 // Add controllers

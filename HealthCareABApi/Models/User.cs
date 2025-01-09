@@ -16,6 +16,8 @@ namespace HealthCareABApi.Models
         // List of roles, a User can have one or more roles if needed.
         // Not specifying a role during User creation sets it to User by default
         public List<string> Roles { get; set; }
+
+        public string Test {  get; set; }
     }
 
 }

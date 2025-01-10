@@ -8,9 +8,7 @@ on:
       - "**/*.csproj"
       - "**/*.sln"
   pull_request:
-    branches: 
-      - [develop]
-      - [main]
+    branches: [develop]
     paths:
       - "**/*.cs"
       - "**/*.csproj"

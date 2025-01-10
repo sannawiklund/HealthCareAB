@@ -1,6 +1,12 @@
 name: Github Actions
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "**/*.cs"
+      - "**/*.csproj"
+      - "**/*.sln"
   pull_request:
     branches: 
       - [develop]

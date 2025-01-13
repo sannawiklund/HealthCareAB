@@ -76,7 +76,7 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("patient-appointments")]
+        [HttpGet("Appointments/Upcoming")]
         public async Task<IActionResult> GetUserAppointments()
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;

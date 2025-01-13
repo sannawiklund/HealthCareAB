@@ -2,7 +2,7 @@ name: Github Actions
 
 on:
   push:
-    branches: [develop]
+    branches: [main]
     paths:
       - "**/*.cs"
       - "**/*.csproj"

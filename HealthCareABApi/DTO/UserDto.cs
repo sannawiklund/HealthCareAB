@@ -1,5 +1,4 @@
-﻿using System;
-namespace HealthCareABApi.DTO
+﻿namespace HealthCareABApi.DTO
 {
     public class UserDto
     {

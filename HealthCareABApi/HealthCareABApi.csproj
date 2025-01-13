@@ -33,8 +33,5 @@
     <Folder Include="Configurations\" />
     <Folder Include="Models\" />
     <Folder Include="Services\" />
-    <Folder Include="Repositories\" />
-    <Folder Include="Repositories\Interfaces\" />
-    <Folder Include="Repositories\Implementations\" />
   </ItemGroup>
 </Project>

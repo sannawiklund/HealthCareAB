@@ -1,6 +1,7 @@
 ﻿using HealthCareABApi.DTO;
 using HealthCareABApi.Models;
 using HealthCareABApi.Repositories;
+using HealthCareABApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -13,11 +14,14 @@ namespace HealthCareABApi.Controllers
     {
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IAvailabilityRepository _availabilityRepository;
+        private readonly AppointmentService _appointmentService;
 
-        public AppointmentController(IAppointmentRepository appointmentRepository, IAvailabilityRepository availabilityRepository)
+        public AppointmentController(IAppointmentRepository appointmentRepository, IAvailabilityRepository availabilityRepository,
+            AppointmentService appointmentService)
         {
             _appointmentRepository = appointmentRepository;
             _availabilityRepository = availabilityRepository;
+            _appointmentService = appointmentService;
         }
 
 
@@ -71,23 +75,25 @@ namespace HealthCareABApi.Controllers
 
         }
 
+        [Authorize]
         [HttpGet("patient-appointments")]
-        public async Task<IActionResult> GetUserAppointments(string userId)
+        public async Task<IActionResult> GetUserAppointments()
         {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
             if (string.IsNullOrEmpty(userId))
             {
-                return BadRequest("User ID is required.");
+                return Unauthorized("User ID is missing a token");
             }
 
-            var appointments = await _appointmentRepository.GetByPatientIdAsync(userId);
+            var appointmentDtos = await _appointmentService.GetAppointmentsForUserAsync(userId);
 
-            if (appointments == null || !appointments.Any())
+            if (appointmentDtos == null || !appointmentDtos.Any())
             {
                 return NotFound("No appointments found for the user");
             }
 
-            return Ok(appointments);
-
+            return Ok(appointmentDtos);
         }
 
     }

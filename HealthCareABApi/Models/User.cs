@@ -1,5 +1,4 @@
-﻿using System;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace HealthCareABApi.Models
@@ -17,7 +16,5 @@ namespace HealthCareABApi.Models
         // Not specifying a role during User creation sets it to User by default
         public List<string> Roles { get; set; }
 
-        public string Test {  get; set; }
     }
-
 }

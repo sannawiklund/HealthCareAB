@@ -16,7 +16,7 @@ namespace HealthCareABApi.Controllers
             _userRepository = userRepository;
         }
 
-        [HttpGet]
+        [HttpGet("GetInformationOfLoggedInUser")]
         public async Task<IActionResult> GetUser()
         {
             //Kontrollerar användaren
@@ -38,5 +38,34 @@ namespace HealthCareABApi.Controllers
 
             return Ok(userDto);
         }
+
+
+        [HttpPut("UpdateInformationOfUser")]
+        public async Task<IActionResult> UpdateUser([FromBody] UserDto userDto)
+        {
+            //Kontrollerar användaren
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID is missing a token");
+            }
+
+            //Hämtar användarens information
+            var currentUserInformation = await _userRepository.GetByIdAsync(userId);
+
+            if (!string.IsNullOrEmpty(userDto.Username))
+            {
+                currentUserInformation.Username = userDto.Username;
+            }
+
+            //Implement more things to change here, as the DTO is updated.
+
+            await _userRepository.UpdateAsync(userId, currentUserInformation);
+
+            return Ok("User information has been updated");
+
+        }
+
     }
 }

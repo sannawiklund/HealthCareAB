@@ -23,7 +23,7 @@ namespace HealthCareABApi.Controllers
 
         //börjar med att kolla så användaren är inloggad, annars ska man inte kunna boka tid.
         [Authorize]
-        [HttpPost]
+        [HttpPost("BookAppointment")]
         public async Task<IActionResult> BookAppointment([FromBody] AppointmentDTO request)
         {
             //Hämtar användarens token mha claims

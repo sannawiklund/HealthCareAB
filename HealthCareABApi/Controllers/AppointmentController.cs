@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace HealthCareABApi.Controllers
 {
-        [ApiController]
+    [ApiController]
     [Route("api/[controller]")]
     public class AppointmentController : ControllerBase
     {
@@ -55,8 +55,8 @@ namespace HealthCareABApi.Controllers
 
             //Plockar bort tiden från vårdpersonalens kalender så det inte kan dubbelbokas.
             var availability = caregiverAvailability.FirstOrDefault(a => a.AvailableSlots.Contains(request.AppointmentTime));
-            if (availability != null) 
-            { 
+            if (availability != null)
+            {
                 availability.AvailableSlots.Remove(request.AppointmentTime);
                 await _availabilityRepository.UpdateAsync(availability.Id, availability);
             }

@@ -70,5 +70,25 @@ namespace HealthCareABApi.Controllers
             });
 
         }
+
+        [HttpGet("patient-appointments")]
+        public async Task<IActionResult> GetUserAppointments(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest("User ID is required.");
+            }
+
+            var appointments = await _appointmentRepository.GetByPatientIdAsync(userId);
+
+            if (appointments == null || !appointments.Any())
+            {
+                return NotFound("No appointments found for the user");
+            }
+
+            return Ok(appointments);
+
+        }
+
     }
 }

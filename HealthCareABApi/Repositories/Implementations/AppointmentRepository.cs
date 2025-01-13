@@ -37,6 +37,10 @@ namespace HealthCareABApi.Repositories.Implementations
         {
             await _collection.DeleteOneAsync(a => a.Id == id);
         }
+        public async Task<IEnumerable<Appointment>> GetByPatientIdAsync(string patientId)
+        {
+            return await _collection.Find(a => a.PatientId == patientId).ToListAsync();
+        }
     }
 }
 

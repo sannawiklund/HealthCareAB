@@ -22,10 +22,9 @@ namespace HealthCareABApi.Controllers
             _appointmentService = appointmentService;
         }
 
-
         //börjar med att kolla så användaren är inloggad, annars ska man inte kunna boka tid.
         [Authorize]
-        [HttpPost]
+        [HttpPost("book")]
         public async Task<IActionResult> BookAppointment([FromBody] AppointmentDTO request)
         {
             //Hämtar användarens token mha claims
@@ -47,7 +46,7 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("Appointments/Upcoming")]
+        [HttpGet("upcoming")]
         public async Task<IActionResult> GetUserAppointments()
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;

@@ -13,14 +13,12 @@ namespace HealthCareABApi.Controllers
     public class AppointmentController : ControllerBase
     {
         private readonly IAppointmentRepository _appointmentRepository;
-        private readonly IAvailabilityRepository _availabilityRepository;
         private readonly AppointmentService _appointmentService;
 
         public AppointmentController(IAppointmentRepository appointmentRepository, IAvailabilityRepository availabilityRepository,
             AppointmentService appointmentService)
         {
             _appointmentRepository = appointmentRepository;
-            _availabilityRepository = availabilityRepository;
             _appointmentService = appointmentService;
         }
 

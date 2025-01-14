@@ -16,7 +16,7 @@ namespace HealthCareABApi.Controllers
             _userRepository = userRepository;
         }
 
-        [HttpGet("GetInformationOfLoggedInUser")]
+        [HttpGet("GetUserInformation")]
         public async Task<IActionResult> GetUser()
         {
             //Kontrollerar användaren
@@ -40,7 +40,7 @@ namespace HealthCareABApi.Controllers
         }
 
 
-        [HttpPut("UpdateInformationOfUser")]
+        [HttpPut("UpdateUserInformation")]
         public async Task<IActionResult> UpdateUser([FromBody] UserDto userDto)
         {
             //Kontrollerar användaren

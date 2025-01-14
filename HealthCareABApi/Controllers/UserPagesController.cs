@@ -59,7 +59,31 @@ namespace HealthCareABApi.Controllers
                 currentUserInformation.Username = userDto.Username;
             }
 
-            //Implement more things to change here, as the DTO is updated.
+            if (!string.IsNullOrEmpty(userDto.FirstName))
+            {
+                currentUserInformation.FirstName = userDto.FirstName;
+            }
+
+            if (!string.IsNullOrEmpty(userDto.LastName))
+            {
+                currentUserInformation.LastName = userDto.LastName;
+            }
+
+            if (!string.IsNullOrEmpty(userDto.Email))
+            {
+                currentUserInformation.Email = userDto.Email;
+            }
+
+            if (!string.IsNullOrEmpty(userDto.Phone))
+            {
+                currentUserInformation.Phone = userDto.Phone;
+            }
+
+            if (!string.IsNullOrEmpty(userDto.Address))
+            {
+                currentUserInformation.Address = userDto.Address;
+            }
+
 
             await _userRepository.UpdateAsync(userId, currentUserInformation);
 

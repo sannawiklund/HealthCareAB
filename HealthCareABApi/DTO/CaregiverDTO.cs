@@ -1,9 +1,9 @@
 ﻿namespace HealthCareABApi.DTO
 {
-    public class UserDto
+    public class CaregiverDTO
     {
-        public string Username { get; set; }
-        public List<string> Roles { get; set; }
+        public string Profession { get; set; } // Name of specialist area, for example cardiologist
+
 
         public string FirstName { get; set; }
         public string LastName { get; set; }

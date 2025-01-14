@@ -12,6 +12,7 @@ namespace HealthCareABApi.Models
 
         public string Username { get; set; }
         public string PasswordHash { get; set; }
+
         // List of roles, a User can have one or more roles if needed.
         // Not specifying a role during User creation sets it to User by default
         public List<string> Roles { get; set; }
@@ -23,12 +24,6 @@ namespace HealthCareABApi.Models
 
         public string Email { get; set; }
         public string Phone { get; set; }
-
-        public string Address { get; set; }
-
-        public string? Gender { get; set; }
-
-        public DateOnly DateOfBirth { get; set; }
 
     }
 }

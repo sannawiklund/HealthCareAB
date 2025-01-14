@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using HealthCareABApi.DTO;
-using HealthCareABApi.Repositories;
+using HealthCareABApi.Services;
 using System.Security.Claims;
 
 namespace HealthCareABApi.Controllers
@@ -9,11 +9,11 @@ namespace HealthCareABApi.Controllers
     [Route("api/[controller]")]
     public class UserPagesController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
+        private readonly UserService _userService;
 
-        public UserPagesController(IUserRepository userRepository)
+        public UserPagesController(UserService userService)
         {
-            _userRepository = userRepository;
+            _userService = userService;
         }
 
         [HttpGet("GetUserInformation")]
@@ -27,14 +27,12 @@ namespace HealthCareABApi.Controllers
                 return Unauthorized("User ID is missing a token");
             }
 
-            //Hämtar från databasen VIA repositoryt
-            var user = await _userRepository.GetByIdAsync(userId);
+            var userDto = await _userService.GetUserInformationAsync(userId);
 
-            var userDto = new UserDto()
+            if (userDto == null)
             {
-                Username = user.Username,
-                Roles = user.Roles
-            };
+                return NotFound("User not found");
+            }
 
             return Ok(userDto);
         }
@@ -52,44 +50,15 @@ namespace HealthCareABApi.Controllers
             }
 
             //Hämtar användarens information
-            var currentUserInformation = await _userRepository.GetByIdAsync(userId);
+            var result = await _userService.UpdateUserInformationAsync(userId, userDto);
 
-            if (!string.IsNullOrEmpty(userDto.Username))
+            if (!result)
             {
-                currentUserInformation.Username = userDto.Username;
+                return BadRequest("Failed to update user information");
             }
-
-            if (!string.IsNullOrEmpty(userDto.FirstName))
-            {
-                currentUserInformation.FirstName = userDto.FirstName;
-            }
-
-            if (!string.IsNullOrEmpty(userDto.LastName))
-            {
-                currentUserInformation.LastName = userDto.LastName;
-            }
-
-            if (!string.IsNullOrEmpty(userDto.Email))
-            {
-                currentUserInformation.Email = userDto.Email;
-            }
-
-            if (!string.IsNullOrEmpty(userDto.Phone))
-            {
-                currentUserInformation.Phone = userDto.Phone;
-            }
-
-            if (!string.IsNullOrEmpty(userDto.Address))
-            {
-                currentUserInformation.Address = userDto.Address;
-            }
-
-
-            await _userRepository.UpdateAsync(userId, currentUserInformation);
 
             return Ok("User information has been updated");
 
         }
-
     }
 }

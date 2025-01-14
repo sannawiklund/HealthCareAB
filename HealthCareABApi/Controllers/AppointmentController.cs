@@ -1,6 +1,7 @@
 ﻿using HealthCareABApi.DTO;
 using HealthCareABApi.Models;
 using HealthCareABApi.Repositories;
+using HealthCareABApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -13,11 +14,14 @@ namespace HealthCareABApi.Controllers
     {
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IAvailabilityRepository _availabilityRepository;
+        private readonly AppointmentService _appointmentService;
 
-        public AppointmentController(IAppointmentRepository appointmentRepository, IAvailabilityRepository availabilityRepository)
+        public AppointmentController(IAppointmentRepository appointmentRepository, IAvailabilityRepository availabilityRepository,
+            AppointmentService appointmentService)
         {
             _appointmentRepository = appointmentRepository;
             _availabilityRepository = availabilityRepository;
+            _appointmentService = appointmentService;
         }
 
 
@@ -69,6 +73,27 @@ namespace HealthCareABApi.Controllers
                 appointmentTime = appointment.DateTime
             });
 
+        }
+
+        [Authorize]
+        [HttpGet("Appointments/Upcoming")]
+        public async Task<IActionResult> GetUserAppointments()
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID is missing a token");
+            }
+
+            var appointmentDtos = await _appointmentService.GetAppointmentsForUserAsync(userId);
+
+            if (appointmentDtos == null || !appointmentDtos.Any())
+            {
+                return NotFound("No appointments found for the user");
+            }
+
+            return Ok(appointmentDtos);
         }
 
         // Ny metod för att hämta alla tillgängliga tider

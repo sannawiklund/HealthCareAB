@@ -25,7 +25,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 // Register custom services
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<JwtTokenService>();
-
+builder.Services.AddScoped<AppointmentService>();
 
 // Add controllers
 builder.Services.AddControllers();

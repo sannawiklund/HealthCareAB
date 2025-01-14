@@ -58,5 +58,23 @@ namespace HealthCareABApi.Controllers
                 }
             );
         }
+        // Ny metod för att hämta alla tillgängliga tider
+        [Authorize]
+        [HttpGet("availableslots")]
+        public async Task<IActionResult> GetAvailableSlots()
+        {
+            var allAvailability = await _availabilityRepository.GetAllAsync();
+            if (allAvailability == null || !allAvailability.Any())
+            {
+                return NotFound("No available slots found");
+            }
+
+            var availableSlots = allAvailability.SelectMany(a => a.AvailableSlots).ToList();
+
+            return Ok(new AvailabilityDTO
+            {
+                AvailableSlots = availableSlots
+            });
+        }
     }
 }

@@ -11,12 +11,12 @@ namespace HealthCareABApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ScheduleController : ControllerBase
+    public class AvailabilityController : ControllerBase
     {
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IAvailabilityRepository _availabilityRepository;
 
-        public ScheduleController(IAppointmentRepository appointmentRepository, IAvailabilityRepository availabilityRepository)
+        public AvailabilityController(IAppointmentRepository appointmentRepository, IAvailabilityRepository availabilityRepository)
         {
             _appointmentRepository = appointmentRepository; // Repository för bokningar
             _availabilityRepository = availabilityRepository; // Repository för tillgänglighet
@@ -57,6 +57,28 @@ namespace HealthCareABApi.Controllers
                     availableSlots = availability.AvailableSlots
                 }
             );
+        }
+
+        [Authorize]
+        [HttpGet("availableslots")]
+        public async Task<IActionResult> GetAvailableSlots()
+        {
+            var allAvailability = await _availabilityRepository.GetAllAsync();
+
+            var availableSlots = allAvailability
+            .SelectMany(a => a.AvailableSlots.Select(appointment => new
+        {
+            CaregiverId = a.CaregiverId,
+            AvailableSlot = appointment
+        }))
+            .ToList();
+
+            if (!availableSlots.Any())
+            {
+                return NotFound("No available slots found");
+            }
+
+            return Ok(availableSlots);
         }
     }
 }

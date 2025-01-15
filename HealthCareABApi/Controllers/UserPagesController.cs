@@ -9,11 +9,11 @@ namespace HealthCareABApi.Controllers
     [Route("api/[controller]")]
     public class UserPagesController : ControllerBase
     {
-        private readonly UserService _userService;
+        private readonly UserPageService _userPageService;
 
-        public UserPagesController(UserService userService)
+        public UserPagesController(UserPageService userPageService)
         {
-            _userService = userService;
+            _userPageService = userPageService;
         }
 
         [HttpGet("GetUserInformation")]
@@ -27,7 +27,7 @@ namespace HealthCareABApi.Controllers
                 return Unauthorized("User ID is missing a token");
             }
 
-            var userDto = await _userService.GetUserInformationAsync(userId);
+            var userDto = await _userPageService.GetUserInformationAsync(userId);
 
             if (userDto == null)
             {
@@ -50,7 +50,7 @@ namespace HealthCareABApi.Controllers
             }
 
             //Hämtar användarens information
-            var result = await _userService.UpdateUserInformationAsync(userId, userDto);
+            var result = await _userPageService.UpdateUserInformationAsync(userId, userDto);
 
             if (!result)
             {

@@ -1,7 +1,5 @@
 ﻿using HealthCareABApi.Configurations;
 using HealthCareABApi.Models;
-using HealthCareABApi.DTO;
-using HealthCareABApi.Repositories;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
@@ -17,50 +15,6 @@ namespace HealthCareABApi.Services
             var client = new MongoClient(mongoDBSettings.Value.ConnectionString);
             var database = client.GetDatabase(mongoDBSettings.Value.DatabaseName);
             _users = database.GetCollection<User>("Users");
-        }
-
-        public async Task<UserDto> GetUserInformationAsync(string userId)
-        {
-            var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
-            if (user == null)
-            {
-                return null;
-            }
-
-            return new UserDto
-            {
-                Username = user.Username,
-                Roles = user.Roles,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Phone = user.Phone,
-                Address = user.Address,
-                Gender = user.Gender,
-                DateOfBirth = user.DateOfBirth
-            };
-        }
-
-        public async Task<bool> UpdateUserInformationAsync(string userId, UserDto userDto)
-        {
-            var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
-            if (user == null)
-            {
-                return false;
-            }
-
-            //Uppdaterar användarens information
-            if (!string.IsNullOrEmpty(userDto.Username)) user.Username = userDto.Username;
-            if (!string.IsNullOrEmpty(userDto.FirstName)) user.FirstName = userDto.FirstName;
-            if (!string.IsNullOrEmpty(userDto.LastName)) user.LastName = userDto.LastName;
-            if (!string.IsNullOrEmpty(userDto.Email)) user.Email = userDto.Email;
-            if (!string.IsNullOrEmpty(userDto.Phone)) user.Phone = userDto.Phone;
-            if (!string.IsNullOrEmpty(userDto.Address)) user.Address = userDto.Address;
-
-            var updateResult = await _users.ReplaceOneAsync(u => u.Id == userId, user);
-
-
-            return updateResult.ModifiedCount > 0;
         }
 
         public async Task<bool> ExistsByUsernameAsync(string username)

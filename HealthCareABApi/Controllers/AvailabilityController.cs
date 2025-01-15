@@ -13,28 +13,21 @@ namespace HealthCareABApi.Controllers
     [Route("api/[controller]")]
     public class AvailabilityController : ControllerBase
     {
-        private readonly IAppointmentRepository _appointmentRepository;
-        private readonly IAvailabilityRepository _availabilityRepository;
+        private readonly AvailabilityService _availabilityService;
 
-        public AvailabilityController(IAppointmentRepository appointmentRepository, IAvailabilityRepository availabilityRepository)
+        public AvailabilityController(
+        AvailabilityService availabilityService)
         {
-            _appointmentRepository = appointmentRepository; // Repository för bokningar
-            _availabilityRepository = availabilityRepository; // Repository för tillgänglighet
+            _availabilityService = availabilityService;
         }
 
         // Skapa tillgänglighet för admin
         [Authorize]
-        [HttpPost("scheduleManagement")]
-        public async Task<IActionResult> ScheduleManagement([FromBody] CreateAvailabilityDTO request)
+        [HttpPost("scheduleAvailability")]
+        public async Task<IActionResult> ScheduleAvailability([FromBody] CreateAvailabilityDTO request)
         {
             // Hämta admin-ID från token
             var caregiverID = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            // Returnera Unauthorized om admin inte är inloggad
-            if (string.IsNullOrEmpty(caregiverID))
-            {
-                return Unauthorized(new { error = "User is not authorized or token is missing." });
-            }
 
             // Skapa en ny tillgänglighetspost
             var availability = new Availability
@@ -43,12 +36,12 @@ namespace HealthCareABApi.Controllers
                 AvailableSlots = request.AvailableSlots
             };
 
-            // Spara tillgänglighet i databasen
-            await _availabilityRepository.CreateAsync(availability);
+            // Använd servicelagret för att spara tillgängligheten
+            await _availabilityService.CreateAvailabilityAsync(availability);
 
             // Returnera 201 Created med detaljer om den nya posten
             return CreatedAtAction(
-                actionName: nameof(ScheduleManagement),
+                actionName: nameof(ScheduleAvailability),
                 routeValues: new { caregiverId = availability.CaregiverId },
                 value: new
                 {
@@ -63,15 +56,16 @@ namespace HealthCareABApi.Controllers
         [HttpGet("availableslots")]
         public async Task<IActionResult> GetAvailableSlots()
         {
-            var allAvailability = await _availabilityRepository.GetAllAsync();
+            // Använd servicelagret för att hämta all tillgänglighet
+            var allAvailability = await _availabilityService.GetAllAvailabilitiesAsync();
 
             var availableSlots = allAvailability
-            .SelectMany(a => a.AvailableSlots.Select(appointment => new
-        {
-            CaregiverId = a.CaregiverId,
-            AvailableSlot = appointment
-        }))
-            .ToList();
+                .SelectMany(a => a.AvailableSlots.Select(appointment => new
+                {
+                    CaregiverId = a.CaregiverId,
+                    AvailableSlot = appointment
+                }))
+                .ToList();
 
             if (!availableSlots.Any())
             {
@@ -80,5 +74,6 @@ namespace HealthCareABApi.Controllers
 
             return Ok(availableSlots);
         }
+
     }
 }

@@ -27,6 +27,7 @@ builder.Services.AddScoped<UserPageService>();
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<JwtTokenService>();
 builder.Services.AddScoped<AppointmentService>();
+builder.Services.AddScoped<AvailabilityService>(); 
 
 // Add controllers
 builder.Services.AddControllers();

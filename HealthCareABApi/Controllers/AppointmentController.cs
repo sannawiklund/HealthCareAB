@@ -20,6 +20,7 @@ namespace HealthCareABApi.Controllers
             _appointmentService = appointmentService;
         }
 
+
         //börjar med att kolla så användaren är inloggad, annars ska man inte kunna boka tid.
         [Authorize]
         [HttpPost("book")]
@@ -63,5 +64,27 @@ namespace HealthCareABApi.Controllers
 
             return Ok(appointmentDtos);
         }
+
+        [Authorize]
+        [HttpGet("history")]
+        public async Task<IActionResult> GetUserAppointmentHistory()
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID is missing a token");
+            }
+
+            var appointmentHistory = await _appointmentService.GetAppointmentHistoryForUserAsync(userId);
+
+            if (appointmentHistory == null || !appointmentHistory.Any())
+            {
+                return NotFound("No appointment history found for the user");
+            }
+
+            return Ok(appointmentHistory);
+        }
+
     }
 }

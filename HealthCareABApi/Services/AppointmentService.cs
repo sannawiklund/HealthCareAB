@@ -42,16 +42,40 @@ namespace HealthCareABApi.Services
         }
         public async Task<List<AppointmentDTO>> GetAppointmentsForUserAsync(string userId)
         {
+            // Hämtar alla möten för användaren
             var appointments = await _appointmentRepository.GetByPatientIdAsync(userId);
 
-            var appointmentDtos = appointments.Select(appointment => new AppointmentDTO
-            {
-                CaregiverId = appointment.CaregiverId,
-                AppointmentTime = appointment.DateTime,
-                Status = appointment.Status
-            }).ToList();
+            // Filtrerar bort möten som har passerat
+            var upcomingAppointments = appointments
+                .Where(appointment => appointment.DateTime > DateTime.UtcNow)
+                .Select(appointment => new AppointmentDTO
+                {
+                    CaregiverId = appointment.CaregiverId,
+                    AppointmentTime = appointment.DateTime,
+                    Status = appointment.Status
+                })
+                .ToList();
 
-            return appointmentDtos;
+            return upcomingAppointments;
+        }
+
+
+        public async Task<List<AppointmentDTO>> GetAppointmentHistoryForUserAsync(string userId)
+        {
+            var appointments = await _appointmentRepository.GetByPatientIdAsync(userId);
+
+            // Filtrerar möten till endast historiska (innan nuvarande tid)
+            var historicalAppointments = appointments
+                .Where(a => a.DateTime <= DateTime.UtcNow)
+                .Select(appointment => new AppointmentDTO
+                {
+                    CaregiverId = appointment.CaregiverId,
+                    AppointmentTime = appointment.DateTime,
+                    Status = appointment.Status
+                })
+                .ToList();
+
+            return historicalAppointments;
         }
     }
 }

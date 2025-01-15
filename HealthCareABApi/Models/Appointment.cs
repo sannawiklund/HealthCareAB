@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -20,9 +21,11 @@ namespace HealthCareABApi.Models
 
         public DateTime DateTime { get; set; }
 
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public AppointmentStatus Status { get; set; }
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum AppointmentStatus
     {
         Scheduled,
@@ -30,4 +33,3 @@ namespace HealthCareABApi.Models
         Cancelled
     }
 }
-

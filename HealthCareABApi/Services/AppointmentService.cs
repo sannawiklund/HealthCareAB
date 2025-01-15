@@ -67,15 +67,24 @@ namespace HealthCareABApi.Services
             // Filtrerar möten till endast historiska (innan nuvarande tid)
             var historicalAppointments = appointments
                 .Where(a => a.DateTime <= DateTime.UtcNow)
-                .Select(appointment => new AppointmentDTO
+                .Select(appointment =>
                 {
-                    CaregiverId = appointment.CaregiverId,
-                    AppointmentTime = appointment.DateTime,
-                    Status = appointment.Status
+                    // Ändra status till Completed om det inte redan är Cancelled
+                    var status = appointment.Status == AppointmentStatus.Cancelled
+                        ? AppointmentStatus.Cancelled
+                        : AppointmentStatus.Completed;
+
+                    return new AppointmentDTO
+                    {
+                        CaregiverId = appointment.CaregiverId,
+                        AppointmentTime = appointment.DateTime,
+                        Status = status
+                    };
                 })
                 .ToList();
 
             return historicalAppointments;
         }
+
     }
 }

@@ -37,7 +37,7 @@ namespace HealthCareABApi.Controllers
             }
 
             // Kontrollera att användaren inte är i fel roll (dubbelkontroll)
-            if (!User.IsInRole("Admin"))
+            if (!User.IsInRole("admin"))
             {
                 return Unauthorized(new { message = "Only caregivers are allowed to add availability slots." });
             }

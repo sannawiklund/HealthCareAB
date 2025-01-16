@@ -48,7 +48,7 @@ namespace HealthCareABApi.Services
 
         }
 
-        public async Task<Appointment> UpdateAppointmentStatusAsync(string appointmentId, AppointmentStatus newStatus, bool isAdmin)
+        public async Task<Appointment> cancelAppointmentAsync(string appointmentId, AppointmentStatus newStatus, bool isAdmin)
         {
             // Hämta mötet baserat på ID från repository
             var appointment = await _appointmentRepository.GetByIdAsync(appointmentId);

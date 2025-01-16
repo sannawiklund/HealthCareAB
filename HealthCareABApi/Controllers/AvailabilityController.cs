@@ -36,6 +36,12 @@ namespace HealthCareABApi.Controllers
                 return Unauthorized(new { error = "User is not authorized or token is missing." });
             }
 
+            // Kontrollera att användaren inte är i fel roll (dubbelkontroll)
+            if (!User.IsInRole("Admin"))
+            {
+                return Unauthorized(new { message = "Only caregivers are allowed to add availability slots." });
+            }
+
             // Skapa en ny tillgänglighetspost
             var availability = new Availability
             {
@@ -67,10 +73,10 @@ namespace HealthCareABApi.Controllers
 
             var availableSlots = allAvailability
             .SelectMany(a => a.AvailableSlots.Select(appointment => new
-        {
-            CaregiverId = a.CaregiverId,
-            AvailableSlot = appointment
-        }))
+            {
+                CaregiverId = a.CaregiverId,
+                AvailableSlot = appointment
+            }))
             .ToList();
 
             if (!availableSlots.Any())

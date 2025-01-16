@@ -1,11 +1,7 @@
-﻿using System;
-using HealthCareABApi.Configurations;
+﻿using HealthCareABApi.Configurations;
 using HealthCareABApi.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using System.Text;
-using System.Security.Cryptography;
-using HealthCareABApi.DTO;
 
 namespace HealthCareABApi.Services
 {

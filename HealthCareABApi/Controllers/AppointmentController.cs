@@ -1,6 +1,4 @@
 ﻿using HealthCareABApi.DTO;
-using HealthCareABApi.Models;
-using HealthCareABApi.Repositories;
 using HealthCareABApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +21,7 @@ namespace HealthCareABApi.Controllers
 
         //börjar med att kolla så användaren är inloggad, annars ska man inte kunna boka tid.
         [Authorize]
-        [HttpPost("book")]
+        [HttpPost("bookAppointment")]
         public async Task<IActionResult> BookAppointment([FromBody] AppointmentDTO request)
         {
             //Hämtar användarens token mha claims

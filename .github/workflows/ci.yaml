@@ -2,7 +2,7 @@ name: GitHub Actions CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, 42-write-xunit-tests]
     paths:
       - "**/*.cs"
       - "**/*.csproj"

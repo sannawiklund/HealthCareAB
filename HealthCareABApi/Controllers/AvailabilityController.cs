@@ -1,4 +1,5 @@
 ﻿using HealthCareABApi.DTO;
+using HealthCareABApi.Models;
 using HealthCareABApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +12,12 @@ namespace HealthCareABApi.Controllers
     public class AvailabilityController : ControllerBase
     {
         private readonly AvailabilityService _availabilityService;
+        private readonly AppointmentService _appointmentService;
 
         public AvailabilityController(AvailabilityService availabilityService)
         {
             _availabilityService = availabilityService;
+            
         }
 
         // Skapa tillgänglighet för admin
@@ -54,5 +57,35 @@ namespace HealthCareABApi.Controllers
 
             return Ok(allAvailability);
         }
+
+        [Authorize]
+        [HttpPut("cancelAppointment/{appointmentId}")]
+        public async Task<IActionResult> cancelAppointment(string appointmentId, [FromBody] AppointmentStatus newStatus)
+        {
+            try
+            {
+                // Kontrollera om användaren är admin genom att läsa ut roller från token
+                var isAdmin = User.IsInRole("Admin");
+
+                // Anropa AvailabilityService för att uppdatera status
+                var updatedAppointment = await _availabilityService.cancelAppointmentAsync(appointmentId, newStatus, isAdmin);
+
+                return Ok(new
+                {
+                    message = "Appointment status successfully updated",
+                    appointmentId = updatedAppointment.Id,
+                    newStatus = updatedAppointment.Status
+                });
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { error = "Appointment not found" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
     }
 }

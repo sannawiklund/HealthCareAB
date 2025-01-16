@@ -29,6 +29,11 @@ namespace HealthCareABApi.Controllers
             //Hämtar användarens token mha claims
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
+            if (User.IsInRole("Admin"))
+            { 
+                return Unauthorized( new { message = "You are not authorized to book appointments." });
+            }
+
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized("User ID is missing a token");

@@ -20,7 +20,6 @@ namespace HealthCareABApi.Controllers
             _appointmentService = appointmentService;
         }
 
-
         //börjar med att kolla så användaren är inloggad, annars ska man inte kunna boka tid.
         [Authorize]
         [HttpPost("bookAppointment")]
@@ -31,7 +30,7 @@ namespace HealthCareABApi.Controllers
 
             if (User.IsInRole("Admin"))
             { 
-                return Unauthorized( new { message = "You are not authorized to book appointments." });
+                return Unauthorized( new { message = "You are not authorized to book appointments as an admin." });
             }
 
             if (string.IsNullOrEmpty(userId))

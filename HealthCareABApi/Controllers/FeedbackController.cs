@@ -13,9 +13,11 @@ namespace HealthCareABApi.Controllers
     public class FeedbackController : ControllerBase
     {
         private readonly FeedbackService _feedbackService;
+        private readonly IAppointmentRepository _appointmentRepository;
         public FeedbackController(
-            FeedbackService feedbackService)
+            FeedbackService feedbackService, IAppointmentRepository appointmentRepository)
         {
+            _appointmentRepository = appointmentRepository;
             _feedbackService = feedbackService;
         }
 
@@ -25,12 +27,37 @@ namespace HealthCareABApi.Controllers
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            var feedbackId = await _feedbackService.LeaveFeedbackAsync(userId, request);
+            if (string.IsNullOrWhiteSpace(request.Comment))
+            {
+                return BadRequest(new
+                {
+                    error = "Comment cannot be empty."
+                });
+            }
+
+            if (request.Comment.Length > 500)
+            {
+                return BadRequest(new
+                {
+                    error = "Comment cannot exceed 900 characters."
+                });
+            }
+
+            var appointment = await _appointmentRepository.GetByIdAsync(request.AppointmentId);
+
+            if (appointment.PatientId != userId)
+            {
+                return BadRequest(new
+                {
+                    error = "You can only leave feedback for your own appointments."
+                });
+            }
+
+            var feedback = await _feedbackService.LeaveFeedbackAsync(userId, request);
 
             return Ok(new
             {
                 message = "Feedback successfully submitted.",
-                feedbackId = feedbackId
             });
         }
     }

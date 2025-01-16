@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using HealthCareABApi.DTO;
-using HealthCareABApi.Repositories;
+using HealthCareABApi.Services;
 using System.Security.Claims;
 
 namespace HealthCareABApi.Controllers
@@ -9,14 +9,14 @@ namespace HealthCareABApi.Controllers
     [Route("api/[controller]")]
     public class UserPagesController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
+        private readonly UserPageService _userPageService;
 
-        public UserPagesController(IUserRepository userRepository)
+        public UserPagesController(UserPageService userPageService)
         {
-            _userRepository = userRepository;
+            _userPageService = userPageService;
         }
 
-        [HttpGet]
+        [HttpGet("GetUserInformation")]
         public async Task<IActionResult> GetUser()
         {
             //Kontrollerar användaren
@@ -27,16 +27,38 @@ namespace HealthCareABApi.Controllers
                 return Unauthorized("User ID is missing a token");
             }
 
-            //Hämtar från databasen VIA repositoryt
-            var user = await _userRepository.GetByIdAsync(userId);
+            var userDto = await _userPageService.GetUserInformationAsync(userId);
 
-            var userDto = new UserDto()
+            if (userDto == null)
             {
-                Username = user.Username,
-                Roles = user.Roles
-            };
+                return NotFound("User not found");
+            }
 
             return Ok(userDto);
+        }
+
+
+        [HttpPut("UpdateUserInformation")]
+        public async Task<IActionResult> UpdateUser([FromBody] UserDto userDto)
+        {
+            //Kontrollerar användaren
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID is missing a token");
+            }
+
+            //Hämtar användarens information
+            var result = await _userPageService.UpdateUserInformationAsync(userId, userDto);
+
+            if (!result)
+            {
+                return BadRequest("Failed to update user information");
+            }
+
+            return Ok("User information has been updated");
+
         }
     }
 }

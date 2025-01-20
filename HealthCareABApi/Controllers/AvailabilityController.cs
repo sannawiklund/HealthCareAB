@@ -26,10 +26,10 @@ namespace HealthCareABApi.Controllers
             var caregiverID = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
             // Kontrollera att användaren inte är i fel roll (dubbelkontroll)
-            if (!User.IsInRole("admin"))
-            {
-                return Unauthorized(new { message = "Only caregivers are allowed to add availability slots." });
-            }
+            //if (!User.IsInRole("admin"))
+            //{
+            //    return Unauthorized(new { message = "Only caregivers are allowed to add availability slots." });
+            //}
 
             var createAvailability = await _availabilityService.CreateAvailabilityAsync(request);
 

@@ -11,31 +11,26 @@ namespace HealthCareABApi.Controllers
     public class AppointmentController : ControllerBase
     {
         private readonly AppointmentService _appointmentService;
+        private readonly UserService _userService;
 
-        public AppointmentController(
-            AppointmentService appointmentService)
+        public AppointmentController(UserService userService, AppointmentService appointmentService)
         {
             _appointmentService = appointmentService;
+            _userService = userService;
+
         }
 
-        //börjar med att kolla så användaren är inloggad, annars ska man inte kunna boka tid.
         [Authorize]
-        [HttpPost("bookAppointment")]
-        public async Task<IActionResult> BookAppointment([FromBody] AppointmentDTO request)
+        [HttpPost("{id}")]
+        public async Task<IActionResult> BookAppointment(string id, [FromBody] AppointmentDTO request)
         {
-            //Hämtar användarens token mha claims
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            if (User.IsInRole("admin"))
-            { 
-                return Unauthorized( new { message = "You are not authorized to book appointments as an admin." });
-            }
-
-            if (string.IsNullOrEmpty(userId))
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
             {
-                return Unauthorized("User ID is missing a token");
+                return NotFound($"User with ID {id} not found.");
             }
-            var appointment = await _appointmentService.BookAppointmentAsync(userId, request);
+
+            var appointment = await _appointmentService.BookAppointmentAsync(user.Id, request);
 
             //Om allt är ok returneras 200.
             return Ok(new

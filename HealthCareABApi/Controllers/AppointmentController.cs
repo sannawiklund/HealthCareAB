@@ -21,7 +21,7 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpPost("{userId}")]
+        [HttpPost("{id}")]
         public async Task<IActionResult> BookAppointment(string id, [FromBody] AppointmentDTO request)
         {
             var user = await _userService.GetUserByIdAsync(id);
@@ -42,7 +42,7 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("upcoming/{userId}")]
+        [HttpGet("upcoming/{id}")]
         public async Task<IActionResult> GetUserAppointments(string id)
         {
             var user = await _userService.GetUserByIdAsync(id);
@@ -62,7 +62,7 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("history/{userId}")]
+        [HttpGet("history/{id}")]
         public async Task<IActionResult> GetUserAppointmentHistory(string id)
         {
             var user = await _userService.GetUserByIdAsync(id);

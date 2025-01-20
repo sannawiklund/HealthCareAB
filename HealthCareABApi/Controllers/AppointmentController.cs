@@ -21,7 +21,7 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpPost("{id}")]
+        [HttpPost("{userId}")]
         public async Task<IActionResult> BookAppointment(string id, [FromBody] AppointmentDTO request)
         {
             var user = await _userService.GetUserByIdAsync(id);
@@ -42,17 +42,16 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("upcoming")]
-        public async Task<IActionResult> GetUserAppointments()
+        [HttpGet("upcoming/{userId}")]
+        public async Task<IActionResult> GetUserAppointments(string id)
         {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userId))
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
             {
-                return Unauthorized("User ID is missing a token");
+                return NotFound($"User with ID {id} not found.");
             }
 
-            var appointmentDtos = await _appointmentService.GetAppointmentsForUserAsync(userId);
+            var appointmentDtos = await _appointmentService.GetAppointmentsForUserAsync(user.Id);
 
             if (appointmentDtos == null || !appointmentDtos.Any())
             {
@@ -63,17 +62,16 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("history")]
-        public async Task<IActionResult> GetUserAppointmentHistory()
+        [HttpGet("history/{userId}")]
+        public async Task<IActionResult> GetUserAppointmentHistory(string id)
         {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userId))
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
             {
-                return Unauthorized("User ID is missing a token");
+                return NotFound($"User with ID {id} not found.");
             }
 
-            var appointmentHistory = await _appointmentService.GetAppointmentHistoryForUserAsync(userId);
+            var appointmentHistory = await _appointmentService.GetAppointmentHistoryForUserAsync(user.Id);
 
             if (appointmentHistory == null || !appointmentHistory.Any())
             {

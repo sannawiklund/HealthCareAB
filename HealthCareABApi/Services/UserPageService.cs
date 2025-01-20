@@ -1,5 +1,4 @@
-﻿using HealthCareABApi.Models;
-using HealthCareABApi.DTO;
+﻿using HealthCareABApi.DTO;
 using HealthCareABApi.Repositories;
 
 namespace HealthCareABApi.Services
@@ -59,5 +58,18 @@ namespace HealthCareABApi.Services
             return true;
         }
 
+        public async Task<bool> DeleteUserAsync(string userId)
+        {
+
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return false;
+            }
+            await _userRepository.DeleteAsync(userId);
+
+            return true;
+
+        }
     }
 }

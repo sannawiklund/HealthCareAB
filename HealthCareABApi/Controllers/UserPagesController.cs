@@ -60,5 +60,26 @@ namespace HealthCareABApi.Controllers
             return Ok("User information has been updated");
 
         }
+
+        [HttpDelete("/{userId}")]
+        public async Task<IActionResult> DeleteUser(string userId)
+        {
+            try
+            {
+                var result = await _userPageService.DeleteUserAsync(userId);
+
+                if (!result)
+                {
+                    return NotFound(new { Message = "User not found" });
+                }
+
+                //If we want to send back some information about the deleted user we could use return OK instead of this.
+                return NoContent();
+            }
+            catch(Exception ex) 
+            {
+                return StatusCode(500, new { Message = "An error occured", Details = ex.Message });
+            }
+        }
     }
 }

@@ -11,25 +11,24 @@ namespace HealthCareABApi.Controllers
     public class AvailabilityController : ControllerBase
     {
         private readonly AvailabilityService _availabilityService;
+        private readonly UserService _userService;
 
-        public AvailabilityController(AvailabilityService availabilityService)
+        public AvailabilityController(AvailabilityService availabilityService, UserService userService)
         {
             _availabilityService = availabilityService;
+            _userService = userService;
         }
 
         // Skapa tillgänglighet för admin
         [Authorize]
-        [HttpPost("scheduleAvailability")]
-        public async Task<IActionResult> ScheduleAvailability([FromBody] CreateAvailabilityDTO request)
+        [HttpPost("{id}")]
+        public async Task<IActionResult> ScheduleAvailability(string id,[FromBody] CreateAvailabilityDTO request)
         {
-            // Hämta admin-ID från token
-            var caregiverID = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            // Kontrollera att användaren inte är i fel roll (dubbelkontroll)
-            //if (!User.IsInRole("admin"))
-            //{
-            //    return Unauthorized(new { message = "Only caregivers are allowed to add availability slots." });
-            //}
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound($"User with ID {id} not found.");
+            }
 
             var createAvailability = await _availabilityService.CreateAvailabilityAsync(request);
 
@@ -47,11 +46,17 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("availableslots")]
-        public async Task<IActionResult> GetAvailableSlots()
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetAvailableSlots(string id)
         {
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound($"User with ID {id} not found.");
+            }
+
             // Använd servicelagret för att hämta all tillgänglighet
-            var allAvailability = await _availabilityService.GetAllAvailabilitiesAsync();
+            var allAvailability = await _availabilityService.GetAllAvailabilitiesAsync(id);
 
             if (!allAvailability.Any())
             {

@@ -2,7 +2,6 @@
 using HealthCareABApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace HealthCareABApi.Controllers
 {
@@ -21,13 +20,13 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpPost("{id}")]
-        public async Task<IActionResult> BookAppointment(string id, [FromBody] AppointmentDTO request)
+        [HttpPost("{userId}")]
+        public async Task<IActionResult> BookAppointment(string userId, [FromBody] AppointmentDTO request)
         {
-            var user = await _userService.GetUserByIdAsync(id);
+            var user = await _userService.GetUserByIdAsync(userId);
             if (user == null)
             {
-                return NotFound($"User with ID {id} not found.");
+                return NotFound($"User with ID {userId} not found.");
             }
 
             var appointment = await _appointmentService.BookAppointmentAsync(user.Id, request);
@@ -42,13 +41,13 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("upcoming/{id}")]
-        public async Task<IActionResult> GetUserAppointments(string id)
+        [HttpGet("upcoming/{userId}")]
+        public async Task<IActionResult> GetUserAppointments(string userId)
         {
-            var user = await _userService.GetUserByIdAsync(id);
+            var user = await _userService.GetUserByIdAsync(userId);
             if (user == null)
             {
-                return NotFound($"User with ID {id} not found.");
+                return NotFound($"User with ID {userId} not found.");
             }
 
             var appointmentDtos = await _appointmentService.GetAppointmentsForUserAsync(user.Id);
@@ -62,13 +61,13 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("history/{id}")]
-        public async Task<IActionResult> GetUserAppointmentHistory(string id)
+        [HttpGet("history/{userId}")]
+        public async Task<IActionResult> GetUserAppointmentHistory(string userId)
         {
-            var user = await _userService.GetUserByIdAsync(id);
+            var user = await _userService.GetUserByIdAsync(userId);
             if (user == null)
             {
-                return NotFound($"User with ID {id} not found.");
+                return NotFound($"User with ID {userId} not found.");
             }
 
             var appointmentHistory = await _appointmentService.GetAppointmentHistoryForUserAsync(user.Id);

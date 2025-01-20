@@ -2,7 +2,6 @@
 using HealthCareABApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace HealthCareABApi.Controllers
 {
@@ -21,13 +20,13 @@ namespace HealthCareABApi.Controllers
 
         // Skapa tillgänglighet för admin
         [Authorize]
-        [HttpPost("{id}")]
-        public async Task<IActionResult> ScheduleAvailability(string id,[FromBody] CreateAvailabilityDTO request)
+        [HttpPost("{userId}")]
+        public async Task<IActionResult> ScheduleAvailability(string userId, [FromBody] CreateAvailabilityDTO request)
         {
-            var user = await _userService.GetUserByIdAsync(id);
+            var user = await _userService.GetUserByIdAsync(userId);
             if (user == null)
             {
-                return NotFound($"User with ID {id} not found.");
+                return NotFound($"User with ID {userId} not found.");
             }
 
             var createAvailability = await _availabilityService.CreateAvailabilityAsync(request);
@@ -46,17 +45,17 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetAvailableSlots(string id)
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetAvailableSlots(string userId)
         {
-            var user = await _userService.GetUserByIdAsync(id);
+            var user = await _userService.GetUserByIdAsync(userId);
             if (user == null)
             {
-                return NotFound($"User with ID {id} not found.");
+                return NotFound($"User with ID {userId} not found.");
             }
 
             // Använd servicelagret för att hämta all tillgänglighet
-            var allAvailability = await _availabilityService.GetAllAvailabilitiesAsync(id);
+            var allAvailability = await _availabilityService.GetAllAvailabilitiesAsync(userId);
 
             if (!allAvailability.Any())
             {

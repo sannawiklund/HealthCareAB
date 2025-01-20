@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using HealthCareABApi.DTO;
 using HealthCareABApi.Services;
-using System.Security.Claims;
 
 namespace HealthCareABApi.Controllers
 {
@@ -16,7 +15,7 @@ namespace HealthCareABApi.Controllers
             _userPageService = userPageService;
         }
 
-        [HttpGet("/{userId}")]
+        [HttpGet("/userpage/{userId}")]
         public async Task<IActionResult> GetUser(string userId)
         {
             /* Låter detta ligga kvar. Tidigare lösning som funkade, men kanske inte var optimal?
@@ -46,7 +45,7 @@ namespace HealthCareABApi.Controllers
         }
 
 
-        [HttpPut("/{userId}")]
+        [HttpPut("/userpage/{userId}")]
         public async Task<IActionResult> UpdateUser(string userId, [FromBody] UserDto userDto)
         {
 
@@ -68,7 +67,7 @@ namespace HealthCareABApi.Controllers
             }
         }
 
-        [HttpDelete("/{userId}")]
+        [HttpDelete("/userpage/{userId}")]
         public async Task<IActionResult> DeleteUser(string userId)
         {
             try

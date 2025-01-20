@@ -16,49 +16,56 @@ namespace HealthCareABApi.Controllers
             _userPageService = userPageService;
         }
 
-        [HttpGet("GetUserInformation")]
-        public async Task<IActionResult> GetUser()
+        [HttpGet("/{userId}")]
+        public async Task<IActionResult> GetUser(string userId)
         {
-            //Kontrollerar användaren
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            /* Låter detta ligga kvar. Tidigare lösning som funkade, men kanske inte var optimal?
+             * //Kontrollerar användaren
+             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            if (string.IsNullOrEmpty(userId))
+             if (string.IsNullOrEmpty(userId))
+             {
+                 return Unauthorized("User ID is missing a token");
+             }*/
+            try
             {
-                return Unauthorized("User ID is missing a token");
+                var userDto = await _userPageService.GetUserInformationAsync(userId);
+
+                if (userDto == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                return Ok(userDto);
+
             }
-
-            var userDto = await _userPageService.GetUserInformationAsync(userId);
-
-            if (userDto == null)
+            catch (Exception ex)
             {
-                return NotFound("User not found");
+                return StatusCode(500, new { Message = "An error occured", Details = ex.Message });
             }
-
-            return Ok(userDto);
         }
 
 
-        [HttpPut("UpdateUserInformation")]
-        public async Task<IActionResult> UpdateUser([FromBody] UserDto userDto)
+        [HttpPut("/{userId}")]
+        public async Task<IActionResult> UpdateUser(string userId, [FromBody] UserDto userDto)
         {
-            //Kontrollerar användaren
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            if (string.IsNullOrEmpty(userId))
+            try
             {
-                return Unauthorized("User ID is missing a token");
+                var result = await _userPageService.UpdateUserInformationAsync(userId, userDto);
+
+                if (!result)
+                {
+                    return NotFound("Failed to update user information");
+                }
+
+                return Ok("User information has been updated");
+
             }
-
-            //Hämtar användarens information
-            var result = await _userPageService.UpdateUserInformationAsync(userId, userDto);
-
-            if (!result)
+            catch (Exception ex)
             {
-                return BadRequest("Failed to update user information");
+                return StatusCode(500, new { Message = "An error occured", Details = ex.Message });
             }
-
-            return Ok("User information has been updated");
-
         }
 
         [HttpDelete("/{userId}")]
@@ -76,7 +83,7 @@ namespace HealthCareABApi.Controllers
                 //If we want to send back some information about the deleted user we could use return OK instead of this.
                 return NoContent();
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 return StatusCode(500, new { Message = "An error occured", Details = ex.Message });
             }

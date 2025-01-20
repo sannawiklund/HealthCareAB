@@ -45,6 +45,11 @@ namespace HealthCareABApi.Controllers
 
             var appointment = await _appointmentRepository.GetByIdAsync(request.AppointmentId);
 
+            if (appointment == null)
+            {
+                return NotFound(new { error = "Appointment not found." });
+            }
+
             if (appointment.PatientId != userId)
             {
                 return BadRequest(new

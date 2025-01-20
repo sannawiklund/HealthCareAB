@@ -20,7 +20,7 @@ namespace HealthCareABApi.Controllers
 
         // Skapa tillgänglighet för admin
         [Authorize]
-        [HttpPost("/{userId}")]
+        [HttpPost("/availability/{userId}")]
         public async Task<IActionResult> ScheduleAvailability(string userId, [FromBody] CreateAvailabilityDTO request)
         {
             var user = await _userService.GetUserByIdAsync(userId);
@@ -45,7 +45,7 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("/{userId}")]
+        [HttpGet("/availability/{userId}")]
         public async Task<IActionResult> GetAvailableSlots(string userId)
         {
             var user = await _userService.GetUserByIdAsync(userId);

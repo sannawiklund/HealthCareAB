@@ -2,17 +2,13 @@ name: GitHub Actions CI
 
 on:
   push:
-    branches: [main, 42-write-xunit-tests]
+    branches: [main]
     paths:
-      - "**/*.cs"
-      - "**/*.csproj"
-      - "**/*.sln"
+      - "xUnitTests/**/*"
   pull_request:
     branches: [develop]
     paths:
-      - "**/*.cs"
-      - "**/*.csproj"
-      - "**/*.sln"
+      - "xUnitTests/**/*"
 
 jobs:
   test:
@@ -44,4 +40,3 @@ jobs:
         with:
           name: test-results
           path: "**/TestResults/*.trx"
-

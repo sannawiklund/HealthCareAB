@@ -28,7 +28,7 @@ namespace HealthCareABApi.Services
             
         }
 
-        public async Task<IEnumerable<AvailabilityDTO>> GetAllAvailabilitiesAsync()
+        public async Task<IEnumerable<AvailabilityDTO>> GetAllAvailabilitiesAsync(string userId)
         {
             var allAvailableSlots = await _availabilityRepository.GetAllAsync();
 

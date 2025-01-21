@@ -1,4 +1,5 @@
 ﻿using HealthCareABApi.DTO;
+using HealthCareABApi.Models;
 using HealthCareABApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,7 @@ namespace HealthCareABApi.Controllers
         }
 
         // Skapa tillgänglighet för admin
-        [Authorize]
+        [Authorize(Roles = Roles.Admin)]
         [HttpPost("scheduleAvailability")]
         public async Task<IActionResult> ScheduleAvailability([FromBody] CreateAvailabilityDTO request)
         {

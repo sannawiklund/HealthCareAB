@@ -1,4 +1,5 @@
 ﻿using HealthCareABApi.DTO;
+using HealthCareABApi.Models;
 using HealthCareABApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +20,7 @@ namespace HealthCareABApi.Controllers
 
         }
 
-        [Authorize]
+        [Authorize(Roles = Roles.User)]
         [HttpPost("/{userId}")]
         public async Task<IActionResult> BookAppointment(string userId, [FromBody] AppointmentDTO request)
         {

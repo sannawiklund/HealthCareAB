@@ -24,8 +24,8 @@ namespace HealthCareABApi.Controllers
             _userService = userService;
         }
 
-        [Authorize]
-        [HttpPost("{userId}")]
+        [Authorize(Roles = Roles.User)]
+        [HttpPost("comment/{userId}")]
         public async Task<IActionResult> LeaveFeedback(string userId, [FromBody] FeedbackDTO request)
         {
             var user = await _userService.GetUserByIdAsync(userId);

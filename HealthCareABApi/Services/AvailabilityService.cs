@@ -48,7 +48,7 @@ namespace HealthCareABApi.Services
 
         }
 
-        public async Task<Appointment> cancelAppointmentAsync(string appointmentId, AppointmentStatus newStatus, bool isAdmin)
+        public async Task<Appointment> cancelAppointmentAsync(string appointmentId, string userId)
         {
             // Hämta mötet baserat på ID från repository
             var appointment = await _appointmentRepository.GetByIdAsync(appointmentId);
@@ -58,22 +58,10 @@ namespace HealthCareABApi.Services
                 throw new KeyNotFoundException("Appointment not found");
             }
 
-            // Om användaren är en admin, sätt statusen till 'Cancelled' automatiskt
-            if (isAdmin)
-            {
-                appointment.Status = AppointmentStatus.Cancelled;
-            }
-            else
-            {
-                // Om inte admin, sätt statusen till den angivna värdet
-                appointment.Status = newStatus;
-            }
-
-            // Uppdatera mötet i databasen via repository
+            appointment.Status = AppointmentStatus.Cancelled;
             await _appointmentRepository.UpdateAsync(appointmentId, appointment);
 
             return appointment;
         }
-
     }
 }

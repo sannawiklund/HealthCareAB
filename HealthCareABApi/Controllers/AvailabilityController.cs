@@ -1,5 +1,6 @@
 ﻿using HealthCareABApi.DTO;
 using HealthCareABApi.Models;
+using HealthCareABApi.Repositories;
 using HealthCareABApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,8 @@ namespace HealthCareABApi.Controllers
     {
         private readonly AvailabilityService _availabilityService;
         private readonly AppointmentService _appointmentService;
+        private readonly IAppointmentRepository _appointmentRepository;
+
         private readonly UserService _userService;
 
         public AvailabilityController(AvailabilityService availabilityService, UserService userService)
@@ -68,34 +71,24 @@ namespace HealthCareABApi.Controllers
             return Ok(allAvailability);
         }
 
-        [Authorize]
-        [HttpPut("cancelAppointment/{appointmentId}")]
-        public async Task<IActionResult> cancelAppointment(string appointmentId, [FromBody] AppointmentStatus newStatus)
+        [Authorize(Roles = Roles.Admin)]
+        [HttpPut("cancelAppointment/{appointmentId}/{userId}")]
+        public async Task<IActionResult> cancelAppointment(string appointmentId, string userId)
         {
-            try
+            var user = await _userService.GetUserByIdAsync(userId);
+            if (user == null)
             {
-                // Kontrollera om användaren är admin genom att läsa ut roller från token
-                var isAdmin = User.IsInRole("Admin");
+                return NotFound($"User with ID {userId} not found.");
+            }
+            // Anropa AvailabilityService för att uppdatera status
+            var updatedAppointment = await _availabilityService.cancelAppointmentAsync(appointmentId, userId);
 
-                // Anropa AvailabilityService för att uppdatera status
-                var updatedAppointment = await _availabilityService.cancelAppointmentAsync(appointmentId, newStatus, isAdmin);
-
-                return Ok(new
-                {
-                    message = "Appointment status successfully updated",
-                    appointmentId = updatedAppointment.Id,
-                    newStatus = updatedAppointment.Status
-                });
-            }
-            catch (KeyNotFoundException)
+            return Ok(new
             {
-                return NotFound(new { error = "Appointment not found" });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+                message = "Appointment status successfully updated",
+                appointmentId = updatedAppointment.Id,
+                newStatus = updatedAppointment.Status
+            });
         }
-
     }
 }

@@ -21,18 +21,12 @@ namespace HealthCareABApi.Controllers
         }
 
         // Skapa tillgänglighet för admin
-        [Authorize]
+        [Authorize(Roles = Roles.Admin)]
         [HttpPost("scheduleAvailability")]
         public async Task<IActionResult> ScheduleAvailability([FromBody] CreateAvailabilityDTO request)
         {
             // Hämta admin-ID från token
             var caregiverID = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            // Kontrollera att användaren inte är i fel roll (dubbelkontroll)
-            if (!User.IsInRole("admin"))
-            {
-                return Unauthorized(new { message = "Only caregivers are allowed to add availability slots." });
-            }
 
             var createAvailability = await _availabilityService.CreateAvailabilityAsync(request);
 

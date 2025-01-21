@@ -4,7 +4,6 @@ using HealthCareABApi.Repositories;
 using HealthCareABApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace HealthCareABApi.Controllers
 {
@@ -25,7 +24,7 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize(Roles = Roles.User)]
-        [HttpPost("comment/{userId}")]
+        [HttpPost("/comment/{userId}")]
         public async Task<IActionResult> LeaveFeedback(string userId, [FromBody] FeedbackDTO request)
         {
             var user = await _userService.GetUserByIdAsync(userId);

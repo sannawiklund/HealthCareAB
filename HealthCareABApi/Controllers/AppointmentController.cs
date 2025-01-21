@@ -3,7 +3,6 @@ using HealthCareABApi.Models;
 using HealthCareABApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace HealthCareABApi.Controllers
 {
@@ -12,26 +11,26 @@ namespace HealthCareABApi.Controllers
     public class AppointmentController : ControllerBase
     {
         private readonly AppointmentService _appointmentService;
+        private readonly UserService _userService;
 
-        public AppointmentController(
-            AppointmentService appointmentService)
+        public AppointmentController(UserService userService, AppointmentService appointmentService)
         {
             _appointmentService = appointmentService;
+            _userService = userService;
+
         }
 
-        //börjar med att kolla så användaren är inloggad, annars ska man inte kunna boka tid.
         [Authorize(Roles = Roles.User)]
-        [HttpPost("bookAppointment")]
-        public async Task<IActionResult> BookAppointment([FromBody] AppointmentDTO request)
+        [HttpPost("/{userId}")]
+        public async Task<IActionResult> BookAppointment(string userId, [FromBody] AppointmentDTO request)
         {
-            //Hämtar användarens token mha claims
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userId))
+            var user = await _userService.GetUserByIdAsync(userId);
+            if (user == null)
             {
-                return Unauthorized("User ID is missing a token");
+                return NotFound($"User with ID {userId} not found.");
             }
-            var appointment = await _appointmentService.BookAppointmentAsync(userId, request);
+
+            var appointment = await _appointmentService.BookAppointmentAsync(user.Id, request);
 
             //Om allt är ok returneras 200.
             return Ok(new
@@ -43,17 +42,16 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("upcoming")]
-        public async Task<IActionResult> GetUserAppointments()
+        [HttpGet("/upcoming/{userId}")]
+        public async Task<IActionResult> GetUserAppointments(string userId)
         {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userId))
+            var user = await _userService.GetUserByIdAsync(userId);
+            if (user == null)
             {
-                return Unauthorized("User ID is missing a token");
+                return NotFound($"User with ID {userId} not found.");
             }
 
-            var appointmentDtos = await _appointmentService.GetAppointmentsForUserAsync(userId);
+            var appointmentDtos = await _appointmentService.GetAppointmentsForUserAsync(user.Id);
 
             if (appointmentDtos == null || !appointmentDtos.Any())
             {
@@ -64,17 +62,16 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("history")]
-        public async Task<IActionResult> GetUserAppointmentHistory()
+        [HttpGet("/history/{userId}")]
+        public async Task<IActionResult> GetUserAppointmentHistory(string userId)
         {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userId))
+            var user = await _userService.GetUserByIdAsync(userId);
+            if (user == null)
             {
-                return Unauthorized("User ID is missing a token");
+                return NotFound($"User with ID {userId} not found.");
             }
 
-            var appointmentHistory = await _appointmentService.GetAppointmentHistoryForUserAsync(userId);
+            var appointmentHistory = await _appointmentService.GetAppointmentHistoryForUserAsync(user.Id);
 
             if (appointmentHistory == null || !appointmentHistory.Any())
             {

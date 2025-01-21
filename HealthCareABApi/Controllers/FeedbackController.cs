@@ -14,18 +14,25 @@ namespace HealthCareABApi.Controllers
     {
         private readonly FeedbackService _feedbackService;
         private readonly IAppointmentRepository _appointmentRepository;
+        private readonly UserService _userService;
+
         public FeedbackController(
-            FeedbackService feedbackService, IAppointmentRepository appointmentRepository)
+            FeedbackService feedbackService, IAppointmentRepository appointmentRepository, UserService userService)
         {
             _appointmentRepository = appointmentRepository;
             _feedbackService = feedbackService;
+            _userService = userService;
         }
 
         [Authorize]
-        [HttpPost("leaveFeedback")]
-        public async Task<IActionResult> LeaveFeedback([FromBody] FeedbackDTO request)
+        [HttpPost("{userId}")]
+        public async Task<IActionResult> LeaveFeedback(string userId, [FromBody] FeedbackDTO request)
         {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var user = await _userService.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound($"User with ID {userId} not found.");
+            }
 
             if (string.IsNullOrWhiteSpace(request.Comment))
             {

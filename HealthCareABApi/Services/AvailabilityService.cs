@@ -1,6 +1,7 @@
 ﻿using HealthCareABApi.DTO;
 using HealthCareABApi.Models;
 using HealthCareABApi.Repositories;
+using HealthCareABApi.Repositories.Implementations;
 
 namespace HealthCareABApi.Services
 {
@@ -8,9 +9,12 @@ namespace HealthCareABApi.Services
     {
         private readonly IAvailabilityRepository _availabilityRepository;
 
-        public AvailabilityService(IAvailabilityRepository availabilityRepository)
+        private readonly IAppointmentRepository _appointmentRepository;
+
+        public AvailabilityService(IAvailabilityRepository availabilityRepository,IAppointmentRepository appointmentRepository)
         {
             _availabilityRepository = availabilityRepository; // Repository för tillgänglighet
+            _appointmentRepository = appointmentRepository;
         }
 
         public async Task<Availability> CreateAvailabilityAsync(CreateAvailabilityDTO createAvailabilityDTO)
@@ -42,6 +46,22 @@ namespace HealthCareABApi.Services
 
             return availableSlots;
 
+        }
+
+        public async Task<Appointment> cancelAppointmentAsync(string appointmentId, string userId)
+        {
+            // Hämta mötet baserat på ID från repository
+            var appointment = await _appointmentRepository.GetByIdAsync(appointmentId);
+
+            if (appointment == null)
+            {
+                throw new KeyNotFoundException("Appointment not found");
+            }
+
+            appointment.Status = AppointmentStatus.Cancelled;
+            await _appointmentRepository.UpdateAsync(appointmentId, appointment);
+
+            return appointment;
         }
     }
 }

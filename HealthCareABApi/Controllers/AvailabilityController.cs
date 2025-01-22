@@ -1,5 +1,6 @@
 ﻿using HealthCareABApi.DTO;
 using HealthCareABApi.Models;
+using HealthCareABApi.Repositories;
 using HealthCareABApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +12,15 @@ namespace HealthCareABApi.Controllers
     public class AvailabilityController : ControllerBase
     {
         private readonly AvailabilityService _availabilityService;
+        private readonly AppointmentService _appointmentService;
+        private readonly IAppointmentRepository _appointmentRepository;
+
         private readonly UserService _userService;
 
         public AvailabilityController(AvailabilityService availabilityService, UserService userService)
         {
             _availabilityService = availabilityService;
+            
             _userService = userService;
         }
 
@@ -64,6 +69,26 @@ namespace HealthCareABApi.Controllers
             }
 
             return Ok(allAvailability);
+        }
+
+        [Authorize(Roles = Roles.Admin)]
+        [HttpPut("/cancelAppointment/{appointmentId}/{userId}")]
+        public async Task<IActionResult> cancelAppointment(string appointmentId, string userId)
+        {
+            var user = await _userService.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound($"User with ID {userId} not found.");
+            }
+            // Anropa AvailabilityService för att uppdatera status
+            var updatedAppointment = await _availabilityService.cancelAppointmentAsync(appointmentId, userId);
+
+            return Ok(new
+            {
+                message = "Appointment status successfully updated",
+                appointmentId = updatedAppointment.Id,
+                newStatus = updatedAppointment.Status
+            });
         }
     }
 }

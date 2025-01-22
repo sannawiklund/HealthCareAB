@@ -72,7 +72,7 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize(Roles = Roles.Admin)]
-        [HttpPut("cancelAppointment/{appointmentId}/{userId}")]
+        [HttpPut("/cancelAppointment/{appointmentId}/{userId}")]
         public async Task<IActionResult> cancelAppointment(string appointmentId, string userId)
         {
             var user = await _userService.GetUserByIdAsync(userId);

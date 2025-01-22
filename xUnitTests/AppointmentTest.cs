@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using HealthCareABApi.Controllers;
-using HealthCareABApi.DTO;
+﻿using HealthCareABApi.DTO;
 using HealthCareABApi.Models;
 using HealthCareABApi.Repositories;
 using HealthCareABApi.Services;
-using Microsoft.AspNetCore.Mvc;
 using Moq;
-using Xunit;
 
 namespace HealthCareABApi.Tests
 {

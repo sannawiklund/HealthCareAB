@@ -10,13 +10,16 @@ namespace HealthCareABApi.Tests
     {
         private readonly Mock<IAvailabilityRepository> _availabilityRepositoryMock;
         private readonly AvailabilityService _availabilityService;
+        private readonly Mock<IAppointmentRepository> _appointmentRepositoryMock;
 
         public AvailabilityServiceTests()
         {
             _availabilityRepositoryMock = new Mock<IAvailabilityRepository>();
-            _availabilityService = new AvailabilityService(_availabilityRepositoryMock.Object);
+            _appointmentRepositoryMock = new Mock<IAppointmentRepository>();
+            _availabilityService = new AvailabilityService(
+            _availabilityRepositoryMock.Object,
+            _appointmentRepositoryMock.Object);
         }
-
 
         //Test av metoden CreateAvailabilityAsync
         [Fact]

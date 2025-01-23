@@ -1,7 +1,7 @@
-﻿using HealthCareABApi.DTO;
+﻿using HealthCareABApi.Controllers;
+using HealthCareABApi.DTO;
 using HealthCareABApi.Models;
 using HealthCareABApi.Repositories;
-using System.ComponentModel.DataAnnotations;
 
 namespace HealthCareABApi.Services
 {
@@ -15,7 +15,16 @@ namespace HealthCareABApi.Services
         }
         public async Task<string> LeaveFeedbackAsync(string userId, FeedbackDTO feedbackDto)
         {
-            
+            if (string.IsNullOrWhiteSpace(feedbackDto.Comment))
+            {
+                throw new InvalidOperationException("Comment cannot be empty.");
+            }
+
+            if (feedbackDto.Comment.Length > 500)
+            {
+                throw new InvalidOperationException("Comment cannot exceed 900 characters.");
+            }
+
             var feedback = new Feedback
             {
                 AppointmentId = feedbackDto.AppointmentId,
@@ -27,5 +36,7 @@ namespace HealthCareABApi.Services
 
             return feedback.Id;
         }
+
+        
     }
 }

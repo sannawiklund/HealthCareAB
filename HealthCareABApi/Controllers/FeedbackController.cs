@@ -33,22 +33,6 @@ namespace HealthCareABApi.Controllers
                 return NotFound($"User with ID {userId} not found.");
             }
 
-            if (string.IsNullOrWhiteSpace(request.Comment))
-            {
-                return BadRequest(new
-                {
-                    error = "Comment cannot be empty."
-                });
-            }
-
-            if (request.Comment.Length > 500)
-            {
-                return BadRequest(new
-                {
-                    error = "Comment cannot exceed 900 characters."
-                });
-            }
-
             var appointment = await _appointmentRepository.GetByIdAsync(request.AppointmentId);
 
             if (appointment == null)

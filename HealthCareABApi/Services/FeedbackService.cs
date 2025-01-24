@@ -20,7 +20,7 @@ namespace HealthCareABApi.Services
                 throw new InvalidOperationException("Comment cannot be empty.");
             }
 
-            if (feedbackDto.Comment.Length > 500)
+            if (feedbackDto.Comment.Length > 900)
             {
                 throw new InvalidOperationException("Comment cannot exceed 900 characters.");
             }

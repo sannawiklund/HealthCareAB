@@ -55,7 +55,7 @@ namespace HealthCareABApi.Controllers
 
             if (appointmentDtos == null || !appointmentDtos.Any())
             {
-                return NotFound("No appointments found for the user");
+                return NoContent();
             }
 
             return Ok(appointmentDtos);
@@ -75,7 +75,7 @@ namespace HealthCareABApi.Controllers
 
             if (appointmentHistory == null || !appointmentHistory.Any())
             {
-                return NotFound("No appointment history found for the user");
+                return NoContent();
             }
 
             return Ok(appointmentHistory);

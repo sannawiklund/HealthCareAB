@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using HealthCareABApi.DTO;
 using HealthCareABApi.Services;
+using Microsoft.AspNetCore.Authorization;
+using HealthCareABApi.Models;
 
 namespace HealthCareABApi.Controllers
 {
@@ -15,6 +17,7 @@ namespace HealthCareABApi.Controllers
             _userPageService = userPageService;
         }
 
+        [Authorize(Roles = Roles.User)]
         [HttpGet("/userpage/{userId}")]
         public async Task<IActionResult> GetUser(string userId)
         {
@@ -44,7 +47,7 @@ namespace HealthCareABApi.Controllers
             }
         }
 
-
+        [Authorize(Roles = Roles.User)]
         [HttpPut("/userpage/{userId}")]
         public async Task<IActionResult> UpdateUser(string userId, [FromBody] UserDto userDto)
         {
@@ -67,6 +70,7 @@ namespace HealthCareABApi.Controllers
             }
         }
 
+        [Authorize(Roles = Roles.User)]
         [HttpDelete("/userpage/{userId}")]
         public async Task<IActionResult> DeleteUser(string userId)
         {

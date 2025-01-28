@@ -90,5 +90,26 @@ namespace HealthCareABApi.Controllers
                 newStatus = updatedAppointment.Status
             });
         }
+
+        [Authorize(Roles = Roles.Admin)]
+        [HttpGet("/slots/{caregiverId}")]
+        public async Task<IActionResult> GetCaregiverAvailableSlots(string caregiverId)
+        {
+            var user = await _userService.GetUserByIdAsync(caregiverId);
+            if (user == null)
+            {
+                return NotFound($"User with ID {caregiverId} not found.");
+            }
+
+            var availableSlots = await _availabilityService.GetAvailableSlotsByCaregiverAsync(caregiverId);
+
+            if (!availableSlots.Any())
+            {
+                return NotFound($"No available slots found for caregiver with ID {caregiverId}.");
+            }
+
+            return Ok(availableSlots);
+        }
+
     }
 }

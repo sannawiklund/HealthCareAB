@@ -105,7 +105,7 @@ namespace HealthCareABApi.Controllers
 
             if (!availableSlots.Any())
             {
-                return NotFound($"No available slots found for caregiver with ID {caregiverId}.");
+                return NoContent();
             }
 
             return Ok(availableSlots);

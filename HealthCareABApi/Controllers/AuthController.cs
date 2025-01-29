@@ -31,6 +31,7 @@ namespace HealthCareABApi.Controllers
             string.IsNullOrWhiteSpace(request.Email) ||
             string.IsNullOrWhiteSpace(request.Phone) ||
             string.IsNullOrWhiteSpace(request.Address) ||
+            string.IsNullOrWhiteSpace(request.Gender) ||
             request.DateOfBirth == default)
             {
                 return BadRequest("All fields are required.");

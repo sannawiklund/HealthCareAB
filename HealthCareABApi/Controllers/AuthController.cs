@@ -24,6 +24,18 @@ namespace HealthCareABApi.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto request)
         {
+            if (string.IsNullOrWhiteSpace(request.Username) ||
+            string.IsNullOrWhiteSpace(request.Password) ||
+            string.IsNullOrWhiteSpace(request.FirstName) ||
+            string.IsNullOrWhiteSpace(request.LastName) ||
+            string.IsNullOrWhiteSpace(request.Email) ||
+            string.IsNullOrWhiteSpace(request.Phone) ||
+            string.IsNullOrWhiteSpace(request.Address) ||
+            string.IsNullOrWhiteSpace(request.Gender) ||
+            request.DateOfBirth == default)
+            {
+                return BadRequest("All fields are required.");
+            }
             // Check if username already exists
             if (await _userService.ExistsByUsernameAsync(request.Username))
             {
@@ -37,7 +49,14 @@ namespace HealthCareABApi.Controllers
                 PasswordHash = _userService.HashPassword(request.Password),
                 Roles = request.Roles == null || !request.Roles.Any()
                     ? new List<string> { "User" }  // Default role
-                    : request.Roles
+                    : request.Roles,
+                    FirstName = request.FirstName,
+                LastName = request.LastName,
+                Email = request.Email,
+                Phone = request.Phone,
+                Address = request.Address,
+                Gender = request.Gender,
+                DateOfBirth = request.DateOfBirth
             };
 
             await _userService.CreateUserAsync(user);

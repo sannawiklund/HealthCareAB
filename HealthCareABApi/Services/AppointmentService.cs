@@ -94,6 +94,30 @@ namespace HealthCareABApi.Services
             return historicalAppointments;
         }
 
+        public async Task<List<AppointmentDTO>> GetAppointmentsForAdminAsync(string caregiverId)
+        {
+            var appointments = await _appointmentRepository.GetByCaregiverIdAsync(caregiverId);
+
+            var upcomingAppointments = new List<AppointmentDTO>();
+
+            foreach (var appointment in appointments.Where(a => a.DateTime > DateTime.UtcNow))
+            {
+                var userId = appointment.PatientId;
+
+                var user = await _userRepository.GetByIdAsync(userId);
+
+                upcomingAppointments.Add(new AppointmentDTO
+                {
+                    CaregiverId = caregiverId,
+                    PatientName = $"{user.Username}",
+                    AppointmentTime = appointment.DateTime,
+                    Status = appointment.Status
+                });
+            }
+
+            return upcomingAppointments;
+        }
+
 
     }
 }

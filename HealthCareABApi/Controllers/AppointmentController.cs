@@ -85,5 +85,25 @@ namespace HealthCareABApi.Controllers
             return Ok(appointmentHistory);
         }
 
+        [Authorize(Roles = Roles.Admin)]
+        [HttpGet("/upcoming/admin/{caregiverId}")]
+        public async Task<IActionResult> GetAdminAppointments(string caregiverId)
+        {
+            var user = await _userService.GetUserByIdAsync(caregiverId);
+            if (user == null)
+            {
+                return NotFound($"User with ID {caregiverId} not found.");
+            }
+
+            var appointmentDtos = await _appointmentService.GetAppointmentsForAdminAsync(caregiverId);
+
+            if (appointmentDtos == null || !appointmentDtos.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(appointmentDtos);
+        }
+
     }
 }

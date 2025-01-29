@@ -8,15 +8,18 @@ namespace HealthCareABApi.Tests
 {
     public class AppointmentServiceTests
     {
+        private readonly Mock<IUserRepository> _userRepositoryMock;
         private readonly Mock<IAppointmentRepository> _appointmentRepositoryMock;
         private readonly Mock<IAvailabilityRepository> _availabilityRepositoryMock;
         private readonly AppointmentService _appointmentService;
 
         public AppointmentServiceTests()
         {
+            _userRepositoryMock = new Mock<IUserRepository>();
             _appointmentRepositoryMock = new Mock<IAppointmentRepository>();
             _availabilityRepositoryMock = new Mock<IAvailabilityRepository>();
-            _appointmentService = new AppointmentService(_appointmentRepositoryMock.Object, _availabilityRepositoryMock.Object);
+            _appointmentService = new AppointmentService(_appointmentRepositoryMock.Object, _availabilityRepositoryMock.Object,
+                _userRepositoryMock.Object);
         }
 
         // POST/Appointment/Book Appointment
@@ -91,15 +94,17 @@ namespace HealthCareABApi.Tests
         //GET/Appointment/Upcoming
 
         [Fact]
-        public async Task GetAppointmentsForUserAsync_ShouldReturnUpcomingAppointments_WhenUserIsLoggedIn()
+        public async Task GetAppointmentsForUserAsync_ShouldReturnUpcomingAppointmentsWithCaregiverName_WhenUserIsLoggedIn()
         {
             // Arrange
             string userId = "user123";
+            string caregiverId = "caregiver123";
             var now = DateTime.UtcNow;
+
             var futureAppointment = new Appointment
             {
                 PatientId = userId,
-                CaregiverId = "caregiver123",
+                CaregiverId = caregiverId,
                 DateTime = now.AddDays(1),
                 Status = AppointmentStatus.Scheduled
             };
@@ -107,14 +112,26 @@ namespace HealthCareABApi.Tests
             var pastAppointment = new Appointment
             {
                 PatientId = userId,
-                CaregiverId = "caregiver123",
+                CaregiverId = caregiverId,
                 DateTime = now.AddDays(-1),
                 Status = AppointmentStatus.Completed
             };
 
+            var caregiver = new User
+            {
+                Id = caregiverId,
+                Username = "CaregiverUser"
+            };
+
+            // Mock för _appointmentRepository
             _appointmentRepositoryMock
                 .Setup(repo => repo.GetByPatientIdAsync(userId))
                 .ReturnsAsync(new List<Appointment> { futureAppointment, pastAppointment });
+
+            // Mock för _userRepository
+            _userRepositoryMock
+                .Setup(repo => repo.GetByIdAsync(caregiverId))
+                .ReturnsAsync(caregiver);
 
             // Act
             var result = await _appointmentService.GetAppointmentsForUserAsync(userId);
@@ -125,8 +142,11 @@ namespace HealthCareABApi.Tests
             Assert.Equal(futureAppointment.CaregiverId, result[0].CaregiverId);
             Assert.Equal(futureAppointment.DateTime, result[0].AppointmentTime);
             Assert.Equal(futureAppointment.Status, result[0].Status);
+            Assert.Equal(caregiver.Username, result[0].CaregiverName); // Kontrollera att CaregiverName är korrekt
 
+            // Verifiera att rätt metoder har kallats
             _appointmentRepositoryMock.Verify(repo => repo.GetByPatientIdAsync(userId), Times.Once);
+            _userRepositoryMock.Verify(repo => repo.GetByIdAsync(caregiverId), Times.Once);
         }
 
         [Fact]
@@ -148,32 +168,50 @@ namespace HealthCareABApi.Tests
         }
 
         // GET/Appointment/History
-
         [Fact]
-        public async Task GetAppointmentHistoryForUserAsync_ShouldReturnHistoricalAppointments_WhenAppointmentsExist()
+        public async Task GetAppointmentHistoryForUserAsync_ShouldReturnHistoricalAppointmentsWithCaregiverName_WhenAppointmentsExist()
         {
             // Arrange
             var userId = "user123";
             var now = DateTime.UtcNow;
-            var appointments = new List<Appointment>
-        {
-            new Appointment
-            {
-                PatientId = userId,
-                CaregiverId = "caregiver1",
-                DateTime = now.AddMinutes(-30), // Historical (past) appointment
-                Status = AppointmentStatus.Scheduled
-            },
-            new Appointment
-            {
-                PatientId = userId,
-                CaregiverId = "caregiver2",
-                DateTime = now.AddMinutes(-10), // Another past appointment
-                Status = AppointmentStatus.Cancelled
-            }
-        };
 
-            _appointmentRepositoryMock.Setup(r => r.GetByPatientIdAsync(userId)).ReturnsAsync(appointments);
+            var appointments = new List<Appointment>
+            {
+             new Appointment
+
+            {
+            PatientId = userId,
+            CaregiverId = "caregiver1",
+            DateTime = now.AddMinutes(-30), // Historical (past) appointment
+            Status = AppointmentStatus.Completed
+            },
+
+            new Appointment
+
+            { 
+            PatientId = userId,
+            CaregiverId = "caregiver2",
+            DateTime = now.AddMinutes(-10), // Another past appointment
+            Status = AppointmentStatus.Cancelled
+            }
+
+            };
+
+            var caregiver1 = new User { Id = "caregiver1", Username = "Dr. Smith" };
+            var caregiver2 = new User { Id = "caregiver2", Username = "Nurse Jane" };
+
+            // Mocka repositories
+            _appointmentRepositoryMock
+                .Setup(r => r.GetByPatientIdAsync(userId))
+                .ReturnsAsync(appointments);
+
+            _userRepositoryMock
+                .Setup(r => r.GetByIdAsync("caregiver1"))
+                .ReturnsAsync(caregiver1);
+
+            _userRepositoryMock
+                .Setup(r => r.GetByIdAsync("caregiver2"))
+                .ReturnsAsync(caregiver2);
 
             // Act
             var result = await _appointmentService.GetAppointmentHistoryForUserAsync(userId);
@@ -184,8 +222,14 @@ namespace HealthCareABApi.Tests
             Assert.All(result, item => Assert.True(item.AppointmentTime <= now)); // All appointments should be in the past
             Assert.Contains(result, item => item.Status == AppointmentStatus.Completed); // One should be Completed
             Assert.Contains(result, item => item.Status == AppointmentStatus.Cancelled); // One should be Cancelled
-        }
+            Assert.Contains(result, item => item.CaregiverName == "Dr. Smith"); // CaregiverName should be correctly set
+            Assert.Contains(result, item => item.CaregiverName == "Nurse Jane");
 
+            // Verifiera att repositories anropas korrekt
+            _appointmentRepositoryMock.Verify(r => r.GetByPatientIdAsync(userId), Times.Once);
+            _userRepositoryMock.Verify(r => r.GetByIdAsync("caregiver1"), Times.Once);
+            _userRepositoryMock.Verify(r => r.GetByIdAsync("caregiver2"), Times.Once);
+        }
 
         [Fact]
         public async Task GetAppointmentHistoryForUserAsync_ShouldReturnEmptyList_WhenNoHistoricalAppointments()

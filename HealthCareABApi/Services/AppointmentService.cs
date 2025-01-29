@@ -1,6 +1,7 @@
 ﻿using HealthCareABApi.DTO;
 using HealthCareABApi.Models;
 using HealthCareABApi.Repositories;
+using HealthCareABApi.Repositories.Implementations;
 
 namespace HealthCareABApi.Services
 {
@@ -8,11 +9,13 @@ namespace HealthCareABApi.Services
     {
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IAvailabilityRepository _availabilityRepository;
+        private readonly IUserRepository _userRepository;
 
-        public AppointmentService(IAppointmentRepository appointmentRepository, IAvailabilityRepository availabilityRepository)
+        public AppointmentService(IAppointmentRepository appointmentRepository, IAvailabilityRepository availabilityRepository, IUserRepository userRepository)
         {
             _appointmentRepository = appointmentRepository;
             _availabilityRepository = availabilityRepository;
+            _userRepository = userRepository;
         }
 
         public async Task<Appointment> BookAppointmentAsync(string userId, AppointmentDTO request)
@@ -40,19 +43,24 @@ namespace HealthCareABApi.Services
         }
         public async Task<List<AppointmentDTO>> GetAppointmentsForUserAsync(string userId)
         {
-            // Hämtar alla möten för användaren
             var appointments = await _appointmentRepository.GetByPatientIdAsync(userId);
 
-            // Filtrerar bort möten som har passerat
-            var upcomingAppointments = appointments
-                .Where(appointment => appointment.DateTime > DateTime.UtcNow)
-                .Select(appointment => new AppointmentDTO
+            var upcomingAppointments = new List<AppointmentDTO>();
+
+            foreach (var appointment in appointments.Where(a => a.DateTime > DateTime.UtcNow))
+            {
+                var caregiverId = appointment.CaregiverId;
+
+                var caregiver = await _userRepository.GetByIdAsync(caregiverId);
+
+                upcomingAppointments.Add(new AppointmentDTO
                 {
-                    CaregiverId = appointment.CaregiverId,
+                    CaregiverId = caregiverId,
+                    CaregiverName = $"{caregiver.Username}",
                     AppointmentTime = appointment.DateTime,
                     Status = appointment.Status
-                })
-                .ToList();
+                });
+            }
 
             return upcomingAppointments;
         }
@@ -62,27 +70,30 @@ namespace HealthCareABApi.Services
         {
             var appointments = await _appointmentRepository.GetByPatientIdAsync(userId);
 
-            // Filtrerar möten till endast historiska (innan nuvarande tid)
-            var historicalAppointments = appointments
-                .Where(a => a.DateTime <= DateTime.UtcNow)
-                .Select(appointment =>
-                {
-                    // Ändra status till Completed om det inte redan är Cancelled
-                    var status = appointment.Status == AppointmentStatus.Cancelled
-                        ? AppointmentStatus.Cancelled
-                        : AppointmentStatus.Completed;
+            var historicalAppointments = new List<AppointmentDTO>();
 
-                    return new AppointmentDTO
-                    {
-                        CaregiverId = appointment.CaregiverId,
-                        AppointmentTime = appointment.DateTime,
-                        Status = status
-                    };
-                })
-                .ToList();
+            foreach (var appointment in appointments.Where(a => a.DateTime <= DateTime.UtcNow))
+            {
+                var caregiverId = appointment.CaregiverId;
+
+                var caregiver = await _userRepository.GetByIdAsync(caregiverId);
+
+                var status = appointment.Status == AppointmentStatus.Cancelled
+                    ? AppointmentStatus.Cancelled
+                    : AppointmentStatus.Completed;
+
+                historicalAppointments.Add(new AppointmentDTO
+                {
+                    CaregiverId = caregiverId,
+                    CaregiverName = $"{caregiver.Username}",
+                    AppointmentTime = appointment.DateTime,
+                    Status = status
+                });
+            }
 
             return historicalAppointments;
         }
+
 
     }
 }

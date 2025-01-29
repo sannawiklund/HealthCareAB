@@ -8,15 +8,18 @@ namespace HealthCareABApi.Tests
 {
     public class AppointmentServiceTests
     {
+        private readonly Mock<IUserRepository> _userRepositoryMock;
         private readonly Mock<IAppointmentRepository> _appointmentRepositoryMock;
         private readonly Mock<IAvailabilityRepository> _availabilityRepositoryMock;
         private readonly AppointmentService _appointmentService;
 
         public AppointmentServiceTests()
         {
+            _userRepositoryMock = new Mock<IUserRepository>();
             _appointmentRepositoryMock = new Mock<IAppointmentRepository>();
             _availabilityRepositoryMock = new Mock<IAvailabilityRepository>();
-            _appointmentService = new AppointmentService(_appointmentRepositoryMock.Object, _availabilityRepositoryMock.Object);
+            _appointmentService = new AppointmentService(_appointmentRepositoryMock.Object, _availabilityRepositoryMock.Object,
+                _userRepositoryMock.Object);
         }
 
         // POST/Appointment/Book Appointment
@@ -91,15 +94,17 @@ namespace HealthCareABApi.Tests
         //GET/Appointment/Upcoming
 
         [Fact]
-        public async Task GetAppointmentsForUserAsync_ShouldReturnUpcomingAppointments_WhenUserIsLoggedIn()
+        public async Task GetAppointmentsForUserAsync_ShouldReturnUpcomingAppointmentsWithCaregiverName_WhenUserIsLoggedIn()
         {
             // Arrange
             string userId = "user123";
+            string caregiverId = "caregiver123";
             var now = DateTime.UtcNow;
+
             var futureAppointment = new Appointment
             {
                 PatientId = userId,
-                CaregiverId = "caregiver123",
+                CaregiverId = caregiverId,
                 DateTime = now.AddDays(1),
                 Status = AppointmentStatus.Scheduled
             };
@@ -107,14 +112,26 @@ namespace HealthCareABApi.Tests
             var pastAppointment = new Appointment
             {
                 PatientId = userId,
-                CaregiverId = "caregiver123",
+                CaregiverId = caregiverId,
                 DateTime = now.AddDays(-1),
                 Status = AppointmentStatus.Completed
             };
 
+            var caregiver = new User
+            {
+                Id = caregiverId,
+                Username = "CaregiverUser"
+            };
+
+            // Mock för _appointmentRepository
             _appointmentRepositoryMock
                 .Setup(repo => repo.GetByPatientIdAsync(userId))
                 .ReturnsAsync(new List<Appointment> { futureAppointment, pastAppointment });
+
+            // Mock för _userRepository
+            _userRepositoryMock
+                .Setup(repo => repo.GetByIdAsync(caregiverId))
+                .ReturnsAsync(caregiver);
 
             // Act
             var result = await _appointmentService.GetAppointmentsForUserAsync(userId);
@@ -125,8 +142,11 @@ namespace HealthCareABApi.Tests
             Assert.Equal(futureAppointment.CaregiverId, result[0].CaregiverId);
             Assert.Equal(futureAppointment.DateTime, result[0].AppointmentTime);
             Assert.Equal(futureAppointment.Status, result[0].Status);
+            Assert.Equal(caregiver.Username, result[0].CaregiverName); // Kontrollera att CaregiverName är korrekt
 
+            // Verifiera att rätt metoder har kallats
             _appointmentRepositoryMock.Verify(repo => repo.GetByPatientIdAsync(userId), Times.Once);
+            _userRepositoryMock.Verify(repo => repo.GetByIdAsync(caregiverId), Times.Once);
         }
 
         [Fact]

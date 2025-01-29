@@ -86,7 +86,7 @@ namespace HealthCareABApi.Controllers
         }
 
         [Authorize(Roles = Roles.Admin)]
-        [HttpGet("/upcoming/admin/{caregiverId}")]
+        [HttpGet("/admin/{caregiverId}")]
         public async Task<IActionResult> GetAdminAppointments(string caregiverId)
         {
             var user = await _userService.GetUserByIdAsync(caregiverId);

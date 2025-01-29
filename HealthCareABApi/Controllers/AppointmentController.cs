@@ -38,7 +38,7 @@ namespace HealthCareABApi.Controllers
             //Om allt är ok returneras 200.
             return Ok(new
             {
-                caregiverName = caregiverName
+                caregiverName = caregiverName,
                 message = "Appointment successfully booked",
                 appointmentId = appointment.Id,
                 appointmentTime = appointment.DateTime

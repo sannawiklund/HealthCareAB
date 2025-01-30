@@ -56,7 +56,7 @@ namespace HealthCareABApi.Services
                 upcomingAppointments.Add(new AppointmentDTO
                 {
                     CaregiverId = caregiverId,
-                    CaregiverName = $"{caregiver.Username}",
+                    CaregiverName = $"{caregiver.FirstName} {caregiver.LastName}",
                     AppointmentTime = appointment.DateTime,
                     Status = appointment.Status
                 });
@@ -114,7 +114,7 @@ namespace HealthCareABApi.Services
                 adminAppointments.Add(new AppointmentDTO
                 {
                     CaregiverId = caregiverId,
-                    PatientName = $"{user.Username}",
+                    PatientName = $"{user.FirstName} {user.LastName}",
                     AppointmentTime = appointment.DateTime,
                     Status = appointment.Status
                 });

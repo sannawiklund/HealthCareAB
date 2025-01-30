@@ -85,7 +85,7 @@ namespace HealthCareABApi.Services
                 historicalAppointments.Add(new AppointmentDTO
                 {
                     CaregiverId = caregiverId,
-                    CaregiverName = $"{caregiver.Username}",
+                    CaregiverName = $"{caregiver.FirstName} {caregiver.LastName}",
                     AppointmentTime = appointment.DateTime,
                     Status = status
                 });

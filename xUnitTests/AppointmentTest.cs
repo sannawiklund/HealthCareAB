@@ -249,6 +249,56 @@ namespace HealthCareABApi.Tests
             Assert.Empty(result); // Should return an empty list since there are no historical appointments
         }
 
+        [Fact]
+        public async Task GetAppointmentsForAdminAsync_ShouldReturnUpcomingAppointments()
+        {
+            // Arrange
+            string caregiverId = "caregiver-123";
+            string patientId = "patient-456";
+            var upcomingDate = DateTime.UtcNow.AddDays(1);
+
+            var appointments = new List<Appointment>
+        {
+            new Appointment { PatientId = patientId, CaregiverId = caregiverId, DateTime = upcomingDate, Status = AppointmentStatus.Scheduled }
+        };
+
+            var patient = new User { Id = patientId, Username = "JohnDoe" };
+
+            _appointmentRepositoryMock.Setup(repo => repo.GetByCaregiverIdAsync(caregiverId))
+                .ReturnsAsync(appointments);
+
+            _userRepositoryMock.Setup(repo => repo.GetByIdAsync(patientId))
+                .ReturnsAsync(patient);
+
+            // Act
+            var result = await _appointmentService.GetAppointmentsForAdminAsync(caregiverId);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal(caregiverId, result[0].CaregiverId);
+            Assert.Equal("JohnDoe", result[0].PatientName);
+            Assert.Equal(upcomingDate, result[0].AppointmentTime);
+            Assert.Equal(AppointmentStatus.Scheduled, result[0].Status);
+        }
+
+        [Fact]
+        public async Task GetAppointmentsForAdminAsync_ThrowsException_WhenRepositoryFails()
+        {
+            // Arrange
+            var caregiverId = "caregiver-123";
+
+            _appointmentRepositoryMock
+                .Setup(repo => repo.GetByCaregiverIdAsync(caregiverId))
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<Exception>(
+                () => _appointmentService.GetAppointmentsForAdminAsync(caregiverId)
+            );
+
+            Assert.Equal("Database error", exception.Message);
+        }
+
     }
 }
 

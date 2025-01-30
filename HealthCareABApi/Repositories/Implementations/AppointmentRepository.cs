@@ -40,6 +40,10 @@ namespace HealthCareABApi.Repositories.Implementations
         {
             return await _collection.Find(a => a.PatientId == patientId).ToListAsync();
         }
+        public async Task<IEnumerable<Appointment>> GetByCaregiverIdAsync(string caregiverId)
+        {
+            return await _collection.Find(a => a.CaregiverId == caregiverId).ToListAsync();
+        }
     }
 }
 

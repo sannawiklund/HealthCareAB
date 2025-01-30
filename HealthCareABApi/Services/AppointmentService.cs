@@ -5,7 +5,7 @@ using HealthCareABApi.Repositories.Implementations;
 
 namespace HealthCareABApi.Services
 {
-    public class AppointmentService 
+    public class AppointmentService
     {
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IAvailabilityRepository _availabilityRepository;
@@ -94,6 +94,33 @@ namespace HealthCareABApi.Services
             return historicalAppointments;
         }
 
+        public async Task<List<AppointmentDTO>> GetAppointmentsForAdminAsync(string caregiverId)
+        {
+            var appointments = await _appointmentRepository.GetByCaregiverIdAsync(caregiverId);
 
+            var adminAppointments = new List<AppointmentDTO>();
+
+            foreach (var appointment in appointments)
+            {
+
+                if (appointment.Status != AppointmentStatus.Cancelled)
+                {
+                    appointment.Status = appointment.DateTime < DateTime.UtcNow ? AppointmentStatus.Completed : AppointmentStatus.Scheduled;
+                }
+
+                var userId = appointment.PatientId;
+                var user = await _userRepository.GetByIdAsync(userId);
+
+                adminAppointments.Add(new AppointmentDTO
+                {
+                    CaregiverId = caregiverId,
+                    PatientName = $"{user.Username}",
+                    AppointmentTime = appointment.DateTime,
+                    Status = appointment.Status
+                });
+            }
+
+            return adminAppointments;
+        }
     }
 }

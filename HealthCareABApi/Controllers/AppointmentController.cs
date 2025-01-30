@@ -32,9 +32,13 @@ namespace HealthCareABApi.Controllers
 
             var appointment = await _appointmentService.BookAppointmentAsync(user.Id, request);
 
+            var caregiver = await _userService.GetUserByIdAsync(request.CaregiverId);
+            string caregiverName = caregiver.Username;
+
             //Om allt är ok returneras 200.
             return Ok(new
             {
+                caregiverName = caregiverName,
                 message = "Appointment successfully booked",
                 appointmentId = appointment.Id,
                 appointmentTime = appointment.DateTime

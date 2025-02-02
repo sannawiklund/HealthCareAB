@@ -11,7 +11,7 @@ namespace HealthCareABApi.Services
 
         private readonly IAppointmentRepository _appointmentRepository;
 
-        public AvailabilityService(IAvailabilityRepository availabilityRepository,IAppointmentRepository appointmentRepository)
+        public AvailabilityService(IAvailabilityRepository availabilityRepository, IAppointmentRepository appointmentRepository)
         {
             _availabilityRepository = availabilityRepository; // Repository för tillgänglighet
             _appointmentRepository = appointmentRepository;
@@ -29,7 +29,7 @@ namespace HealthCareABApi.Services
             // Använd servicelagret för att spara tillgängligheten
             await _availabilityRepository.CreateAsync(availability);
             return availability;
-            
+
         }
 
         public async Task<IEnumerable<AvailabilityDTO>> GetAllAvailabilitiesAsync(string userId)
@@ -62,6 +62,17 @@ namespace HealthCareABApi.Services
             await _appointmentRepository.UpdateAsync(appointmentId, appointment);
 
             return appointment;
+        }
+
+        public async Task<IEnumerable<DateTime>> GetAvailableSlotsByCaregiverAsync(string caregiverId)
+        {
+            var caregiverAvailabilities = await _availabilityRepository.GetByCaregiverIdAsync(caregiverId);
+
+            var availableSlots = caregiverAvailabilities
+            .SelectMany(a => a.AvailableSlots)
+            .ToList();
+
+            return availableSlots;
         }
     }
 }

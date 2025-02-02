@@ -32,9 +32,13 @@ namespace HealthCareABApi.Controllers
 
             var appointment = await _appointmentService.BookAppointmentAsync(user.Id, request);
 
+            var caregiver = await _userService.GetUserByIdAsync(request.CaregiverId);
+            string caregiverName = caregiver.Username;
+
             //Om allt är ok returneras 200.
             return Ok(new
             {
+                caregiverName = caregiverName,
                 message = "Appointment successfully booked",
                 appointmentId = appointment.Id,
                 appointmentTime = appointment.DateTime
@@ -79,6 +83,26 @@ namespace HealthCareABApi.Controllers
             }
 
             return Ok(appointmentHistory);
+        }
+
+        [Authorize(Roles = Roles.Admin)]
+        [HttpGet("/admin/{caregiverId}")]
+        public async Task<IActionResult> GetAdminAppointments(string caregiverId)
+        {
+            var user = await _userService.GetUserByIdAsync(caregiverId);
+            if (user == null)
+            {
+                return NotFound($"User with ID {caregiverId} not found.");
+            }
+
+            var appointmentDtos = await _appointmentService.GetAppointmentsForAdminAsync(caregiverId);
+
+            if (appointmentDtos == null || !appointmentDtos.Any())
+            {
+                return NoContent();
+            }
+
+            return Ok(appointmentDtos);
         }
 
     }

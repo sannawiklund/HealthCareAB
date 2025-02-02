@@ -22,7 +22,7 @@ namespace HealthCareABApi.Tests
                 _userRepositoryMock.Object);
         }
 
-        // POST/Appointment/Book Appointment
+        // POST/Appointment/BookAppointment
         [Fact]
         public async Task BookAppointmentAsync_ShouldBookAppointment_WhenSlotIsAvailable()
         {

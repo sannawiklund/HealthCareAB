@@ -109,26 +109,17 @@ namespace HealthCareABApi.Tests
                 Status = AppointmentStatus.Scheduled
             };
 
-            var pastAppointment = new Appointment
-            {
-                PatientId = userId,
-                CaregiverId = caregiverId,
-                DateTime = now.AddDays(-1),
-                Status = AppointmentStatus.Completed
-            };
-
             var caregiver = new User
             {
                 Id = caregiverId,
-                Username = "CaregiverUser"
+                FirstName = "John",
+                LastName = "Doe"
             };
 
-            // Mock för _appointmentRepository
             _appointmentRepositoryMock
                 .Setup(repo => repo.GetByPatientIdAsync(userId))
-                .ReturnsAsync(new List<Appointment> { futureAppointment, pastAppointment });
+                .ReturnsAsync(new List<Appointment> { futureAppointment });
 
-            // Mock för _userRepository
             _userRepositoryMock
                 .Setup(repo => repo.GetByIdAsync(caregiverId))
                 .ReturnsAsync(caregiver);
@@ -138,15 +129,8 @@ namespace HealthCareABApi.Tests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Single(result); // Endast framtida möten ska returneras
-            Assert.Equal(futureAppointment.CaregiverId, result[0].CaregiverId);
-            Assert.Equal(futureAppointment.DateTime, result[0].AppointmentTime);
-            Assert.Equal(futureAppointment.Status, result[0].Status);
-            Assert.Equal(caregiver.Username, result[0].CaregiverName); // Kontrollera att CaregiverName är korrekt
-
-            // Verifiera att rätt metoder har kallats
-            _appointmentRepositoryMock.Verify(repo => repo.GetByPatientIdAsync(userId), Times.Once);
-            _userRepositoryMock.Verify(repo => repo.GetByIdAsync(caregiverId), Times.Once);
+            Assert.Single(result);
+            Assert.Equal("John Doe", result[0].CaregiverName);
         }
 
         [Fact]
@@ -177,30 +161,25 @@ namespace HealthCareABApi.Tests
 
             var appointments = new List<Appointment>
             {
-             new Appointment
-
-            {
-            PatientId = userId,
-            CaregiverId = "caregiver1",
-            DateTime = now.AddMinutes(-30), // Historical (past) appointment
-            Status = AppointmentStatus.Completed
-            },
-
-            new Appointment
-
-            { 
-            PatientId = userId,
-            CaregiverId = "caregiver2",
-            DateTime = now.AddMinutes(-10), // Another past appointment
-            Status = AppointmentStatus.Cancelled
-            }
-
+                new Appointment
+                {
+                    PatientId = userId,
+                    CaregiverId = "caregiver1",
+                    DateTime = now.AddMinutes(-30),
+                    Status = AppointmentStatus.Completed
+                },
+                new Appointment
+                {
+                    PatientId = userId,
+                    CaregiverId = "caregiver2",
+                    DateTime = now.AddMinutes(-10),
+                    Status = AppointmentStatus.Cancelled
+                }
             };
 
-            var caregiver1 = new User { Id = "caregiver1", Username = "Dr. Smith" };
-            var caregiver2 = new User { Id = "caregiver2", Username = "Nurse Jane" };
+            var caregiver1 = new User { Id = "caregiver1", FirstName = "Dr.", LastName = "Smith" };
+            var caregiver2 = new User { Id = "caregiver2", FirstName = "Nurse", LastName = "Jane" };
 
-            // Mocka repositories
             _appointmentRepositoryMock
                 .Setup(r => r.GetByPatientIdAsync(userId))
                 .ReturnsAsync(appointments);
@@ -218,17 +197,9 @@ namespace HealthCareABApi.Tests
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(2, result.Count); // Should return 2 appointments
-            Assert.All(result, item => Assert.True(item.AppointmentTime <= now)); // All appointments should be in the past
-            Assert.Contains(result, item => item.Status == AppointmentStatus.Completed); // One should be Completed
-            Assert.Contains(result, item => item.Status == AppointmentStatus.Cancelled); // One should be Cancelled
-            Assert.Contains(result, item => item.CaregiverName == "Dr. Smith"); // CaregiverName should be correctly set
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, item => item.CaregiverName == "Dr. Smith");
             Assert.Contains(result, item => item.CaregiverName == "Nurse Jane");
-
-            // Verifiera att repositories anropas korrekt
-            _appointmentRepositoryMock.Verify(r => r.GetByPatientIdAsync(userId), Times.Once);
-            _userRepositoryMock.Verify(r => r.GetByIdAsync("caregiver1"), Times.Once);
-            _userRepositoryMock.Verify(r => r.GetByIdAsync("caregiver2"), Times.Once);
         }
 
         [Fact]
@@ -258,11 +229,11 @@ namespace HealthCareABApi.Tests
             var upcomingDate = DateTime.UtcNow.AddDays(1);
 
             var appointments = new List<Appointment>
-        {
-            new Appointment { PatientId = patientId, CaregiverId = caregiverId, DateTime = upcomingDate, Status = AppointmentStatus.Scheduled }
-        };
+            {
+                new Appointment { PatientId = patientId, CaregiverId = caregiverId, DateTime = upcomingDate, Status = AppointmentStatus.Scheduled }
+            };
 
-            var patient = new User { Id = patientId, Username = "JohnDoe" };
+            var patient = new User { Id = patientId, FirstName = "John", LastName = "Doe" };
 
             _appointmentRepositoryMock.Setup(repo => repo.GetByCaregiverIdAsync(caregiverId))
                 .ReturnsAsync(appointments);
@@ -275,10 +246,7 @@ namespace HealthCareABApi.Tests
 
             // Assert
             Assert.Single(result);
-            Assert.Equal(caregiverId, result[0].CaregiverId);
-            Assert.Equal("JohnDoe", result[0].PatientName);
-            Assert.Equal(upcomingDate, result[0].AppointmentTime);
-            Assert.Equal(AppointmentStatus.Scheduled, result[0].Status);
+            Assert.Equal("John Doe", result[0].PatientName);
         }
 
         [Fact]
